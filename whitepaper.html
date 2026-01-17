@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Game Studio (AGS) 官方技术白皮书</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B2447',
+                        secondary: '#8A2BE2',
+                        accent: '#00BFFF',
+                        success: '#39FF14',
+                        warning: '#FFD700',
+                        dark: '#1A1A2E',
+                        'dark-gray': '#4A4A6A',
+                        'light-gray': '#E5E5E5'
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px rgba(0, 191, 255, 0.5)' },
+                            '100%': { boxShadow: '0 0 20px rgba(0, 191, 255, 0.8), 0 0 30px rgba(138, 43, 226, 0.6)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        /* 白皮书专用样式 */
+        .whitepaper-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(0, 191, 255, 0.2);
+        }
+        
+        .whitepaper-content h1, .whitepaper-content h2, .whitepaper-content h3, .whitepaper-content h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: #ffffff;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .whitepaper-content h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .whitepaper-content h2 {
+            font-size: 2rem;
+            border-bottom: 2px solid rgba(0, 191, 255, 0.3);
+            padding-bottom: 10px;
+        }
+        
+        .whitepaper-content h3 {
+            font-size: 1.5rem;
+        }
+        
+        .whitepaper-content p {
+            color: #e5e5e5;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+        
+        .whitepaper-content ul, .whitepaper-content ol {
+            color: #e5e5e5;
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+        
+        .whitepaper-content li {
+            margin-bottom: 10px;
+            line-height: 1.8;
+        }
+        
+        .whitepaper-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .whitepaper-content th, .whitepaper-content td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid rgba(0, 191, 255, 0.3);
+        }
+        
+        .whitepaper-content th {
+            background-color: rgba(0, 191, 255, 0.1);
+            color: #ffffff;
+            font-weight: bold;
+        }
+        
+        .whitepaper-content tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .whitepaper-content hr {
+            border: none;
+            border-top: 1px solid rgba(0, 191, 255, 0.3);
+            margin: 30px 0;
+        }
+        
+        .whitepaper-content .subtitle {
+            text-align: center;
+            color: #00BFFF;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+        }
+        
+        .whitepaper-content .version-info {
+            text-align: center;
+            color: #8A2BE2;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+        
+        .whitepaper-content .official-info {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: rgba(138, 43, 226, 0.1);
+            border-radius: 8px;
+        }
+        
+        .whitepaper-content .official-info p {
+            margin-bottom: 10px;
+            color: #00BFFF;
+        }
+    </style>
+</head>
+<body class="font-inter text-light-gray overflow-x-hidden">
+    <!-- 3D Background Canvas -->
+    <div id="canvas-container"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-50 glass-effect border-b border-accent/20">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-2">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center">
+                    <i class="fas fa-gamepad text-white text-xl"></i>
+                </div>
+                <span class="font-orbitron font-bold text-2xl text-white neon-text">AGS</span>
+            </a>
+            
+            <!-- Language Switch -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="whitepaper.html" class="text-accent font-medium">中文</a>
+                <a href="whitepaper-en.html" class="text-light-gray hover:text-accent transition-colors">English</a>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="index.html#overview" class="text-light-gray hover:text-accent transition-colors">概述</a>
+                <a href="index.html#features" class="text-light-gray hover:text-accent transition-colors">功能</a>
+                <a href="index.html#tokenomics" class="text-light-gray hover:text-accent transition-colors">代币经济</a>
+                <a href="index.html#team" class="text-light-gray hover:text-accent transition-colors">团队</a>
+                <a href="index.html#roadmap" class="text-light-gray hover:text-accent transition-colors">路线图</a>
+                <a href="index.html#buy-token" class="btn-neon bg-gradient-to-r from-accent to-secondary text-white px-6 py-2 rounded-full font-medium">
+                    购买代币
+                </a>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="md:hidden text-white text-2xl">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div id="mobile-menu" class="md:hidden hidden glass-effect border-t border-accent/20">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex flex-col space-y-4">
+                    <a href="index.html#overview" class="text-light-gray hover:text-accent transition-colors py-2">概述</a>
+                    <a href="index.html#features" class="text-light-gray hover:text-accent transition-colors py-2">功能</a>
+                    <a href="index.html#tokenomics" class="text-light-gray hover:text-accent transition-colors py-2">代币经济</a>
+                    <a href="index.html#team" class="text-light-gray hover:text-accent transition-colors py-2">团队</a>
+                    <a href="index.html#roadmap" class="text-light-gray hover:text-accent transition-colors py-2">路线图</a>
+                    <a href="index.html#buy-token" class="btn-neon bg-gradient-to-r from-accent to-secondary text-white px-6 py-3 rounded-full font-medium text-center">
+                        购买代币
+                    </a>
+                    <div class="flex space-x-4 pt-2">
+                        <a href="whitepaper.html" class="text-accent font-medium">中文</a>
+                        <a href="whitepaper-en.html" class="text-light-gray hover:text-accent transition-colors">English</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 px-4">
+        <div class="container mx-auto">
+            <div class="whitepaper-content">
+                <!-- 白皮书标题 -->
+                <h1>AI Game Studio (AGS) 官方技术白皮书</h1>
+                <p class="subtitle">基于Solana与AI的下一代去中心化游戏创作与分发平台</p>
+                <p class="version-info">版本：V1.0 | 发布日期：2026年1月17日</p>
+                
+                <div class="official-info">
+                    <p>官方唯一收款地址：<strong>B7dc7JSEsjM88nUfRbgkRzvKu6NwXzbANoJbSsyuJD2c</strong></p>
+                    <p>官方官网：<a href="https://solana-ai-v55.vercel.app/" class="text-white hover:text-accent">https://solana-ai-v55.vercel.app/</a></p>
+                </div>
+                
+                <hr>
+                
+                <!-- 一、摘要 -->
+                <h2>一、摘要</h2>
+                <p>AI Game Studio（AGS）以革新浪潮降低游戏开发门槛，引爆全民创作革命。我们打造基于<strong>Solana高性能区块链</strong>的去中心化平台，深度集成前沿多模态AI模型，实现用户通过简单提示词（Prompt）<strong>一键生成+链上部署</strong>可玩游戏，且所有资产权属清晰可追溯。</p>
+                <p>平台原生代币<strong>$AGS</strong>为生态核心燃料，全面覆盖AI算力支付、资产铸造、交易流通与社区治理全场景。AGS汇聚Web3、游戏、AI领域顶尖投资机构与技术专家，构建<strong>创作者主导、玩家参与、AI辅助</strong>的开放式游戏元宇宙，重新定义Web3时代游戏创作与分发的底层逻辑。</p>
+                
+                <hr>
+                
+                <!-- 二、愿景与使命 -->
+                <h2>二、愿景与使命</h2>
+                
+                <h3>2.1 核心愿景</h3>
+                <p>成为Web3时代游戏创作的“iPhone时刻”推动者，让十亿人成为游戏创作者。</p>
+                
+                <h3>2.2 核心使命</h3>
+                <p>融合AI即时生成能力与区块链透明确权特性，打造无代码、低成本、高自由度的去中心化游戏创作与社交平台。</p>
+                
+                <hr>
+                
+                <!-- 三、市场机遇与痛点分析 -->
+                <h2>三、市场机遇与痛点分析</h2>
+                <p>游戏行业正处于Web2向Web3转型、AI技术全面渗透的双重风口，但传统模式与早期链游均存在核心痛点，为AGS创造了千亿级市场机遇：</p>
+                
+                <ol>
+                    <li><strong>传统游戏开发</strong>：研发成本超千万、周期长达1-3年，编程/美术/策划等技术门槛将中小团队与个人创作者拒之门外。</li>
+                    <li><strong>Web2 UGC平台</strong>：创作者无作品与资产真正所有权，平台抽成高、收益分成模式不透明，创作动力被严重抑制。</li>
+                    <li><strong>现有链游</strong>：重金融轻游戏性，开发仍依赖传统流程，区块链仅作为资产交易工具，未实现创作流程革新。</li>
+                    <li><strong>AI生成内容赛道</strong>：图像/代码/叙事生成技术成熟，但缺乏与区块链经济系统无缝整合的一站式平台，内容价值无法有效沉淀。</li>
+                </ol>
+                
+                <p><strong>AGS核心解决方案</strong>：将<strong>AI创作</strong>、<strong>区块链部署</strong>与<strong>代币经济</strong>三者深度融合，形成创作-确权-流通-收益的完整闭环生态，从根源解决行业痛点。</p>
+                
+                <hr>
+                
+                <!-- 四、核心技术架构 -->
+                <h2>四、核心技术架构</h2>
+                
+                <h3>4.1 AI游戏生成引擎</h3>
+                <ol>
+                    <li><strong>多模态AI深度集成</strong>：整合GPT-4o（游戏逻辑/叙事生成）、Midjourney/Sora（2D/3D角色/场景/道具生成）、AudioGen（音效/配乐生成）、CodeLlama（Solana智能合约/游戏脚本生成），实现全要素AI化创作。</li>
+                    <li><strong>模块化游戏模板</strong>：内置RPG、跑酷、卡牌、模拟经营等10+核心游戏模板，用户通过自然语言描述需求，AI一键填充内容并生成完整可玩游戏包。</li>
+                    <li><strong>全链路可编辑性</strong>：生成后游戏的美术、数值、规则等所有元素，支持可视化编辑器或二次AI指令微调，实现“生成-编辑-再生成”的高效迭代创作。</li>
+                </ol>
+                
+                <h3>4.2 Solana链上部署与资产管理</h3>
+                <ol>
+                    <li><strong>一键链上部署</strong>：生成游戏及NFT角色/道具/土地等核心资产，通过平台标准化封装，一键部署至Solana主网，游戏核心逻辑与资产所有权上链存证，透明不可篡改。</li>
+                    <li><strong>高性能低成本体验</strong>：依托Solana 65000+ TPS高吞吐量与0.0009美元超低Gas费，支持游戏内高频交互与资产秒级转移，体验媲美Web2游戏。</li>
+                    <li><strong>SPL标准全兼容</strong>：所有生成资产均遵循Solana SPL-NFT/FT标准，无缝对接Magic Eden、Raydium等Solana生态钱包、NFT市场与DEX，资产流通无壁垒。</li>
+                </ol>
+                
+                <h3>4.3 AGS平台前端</h3>
+                <ol>
+                    <li><strong>极简用户友好界面</strong>：轻量化网页端设计，用户连接Phantom/Solflare等Solana钱包后，可在「创作工坊」一键生成游戏，在「游戏大厅」浏览、试玩、交易游戏与资产。</li>
+                    <li><strong>多维度创作者仪表盘</strong>：提供游戏实时收入、玩家数量、资产交易额、版税收益等核心数据看板，创作收益实时可查、一键提现。</li>
+                </ol>
+                
+                <hr>
+                
+                <!-- 五、$AGS代币经济学 -->
+                <h2>五、$AGS代币经济学</h2>
+                <p>$AGS是AI Game Studio生态的原生功能型+治理型代币，基于Solana SPL-20标准发行，是生态内价值流转、权利行使的唯一载体。</p>
+                
+                <h3>5.1 代币基础信息</h3>
+                <table>
+                    <tr>
+                        <th>项目</th>
+                        <th>详情</th>
+                    </tr>
+                    <tr>
+                        <td><strong>代币名称</strong></td>
+                        <td>AGS</td>
+                    </tr>
+                    <tr>
+                        <td><strong>发行底层</strong></td>
+                        <td>Solana（SPL-20）</td>
+                    </tr>
+                    <tr>
+                        <td><strong>总供应量</strong></td>
+                        <td>10,000,000,000 $AGS</td>
+                    </tr>
+                    <tr>
+                        <td><strong>官方唯一收款地址</strong></td>
+                        <td>B7dc7JSEsjM88nUfRbgkRzvKu6NwXzbANoJbSsyuJD2c</td>
+                    </tr>
+                </table>
+                
+                <h3>5.2 代币分配方案</h3>
+                <table>
+                    <tr>
+                        <th>分配板块</th>
+                        <th>占比</th>
+                        <th>数量（$AGS）</th>
+                        <th>用途/解锁规则</th>
+                    </tr>
+                    <tr>
+                        <td>生态发展与社区激励</td>
+                        <td>40%</td>
+                        <td>4,000,000,000</td>
+                        <td>创作者奖励、玩家空投、流动性挖矿、社区活动，无锁仓，按需释放</td>
+                    </tr>
+                    <tr>
+                        <td>私募轮融资</td>
+                        <td>15%</td>
+                        <td>1,500,000,000</td>
+                        <td>分配给早期战略投资机构，6个月锁仓，后续18个月线性释放</td>
+                    </tr>
+                    <tr>
+                        <td>团队与顾问</td>
+                        <td>15%</td>
+                        <td>1,500,000,000</td>
+                        <td>锁定24个月，之后24个月线性释放，绑定核心团队长期利益</td>
+                    </tr>
+                    <tr>
+                        <td>基金会储备</td>
+                        <td>20%</td>
+                        <td>2,000,000,000</td>
+                        <td>长期生态建设、技术研发、合作伙伴关系，由AGS基金会统一管理</td>
+                    </tr>
+                    <tr>
+                        <td>公开销售</td>
+                        <td>10%</td>
+                        <td>1,000,000,000</td>
+                        <td>社区公开发行，用于流动性建设与社区普及，无锁仓</td>
+                    </tr>
+                </table>
+                
+                <h3>5.3 代币核心效用</h3>
+                <ol>
+                    <li><strong>创作燃料</strong>：支付AI生成游戏、铸造数字资产所需的算力与技术服务费用。</li>
+                    <li><strong>链上部署费用</strong>：以$AGS结算游戏及资产上链的Gas费，实现一站式支付。</li>
+                    <li><strong>生态交易媒介</strong>：平台内游戏、NFT资产、逻辑模块交易的唯一结算货币。</li>
+                    <li><strong>创作者收益分享</strong>：玩家游戏消费的大部分收益，以$AGS形式自动分配给创作者。</li>
+                    <li><strong>社区治理投票</strong>：持有者质押$AGS参与平台技术升级、费用调整、新功能优先级等关键决策。</li>
+                </ol>
+                
+                <h3>5.4 生态用户流转流程</h3>
+                <ol>
+                    <li>用户将$AGS充值至平台钱包（支持Solana生态主流钱包）；</li>
+                    <li>支付$AGS使用AI生成工具，创作专属游戏及数字资产；</li>
+                    <li>支付少量$AGS完成游戏与资产的Solana链上部署，获得唯一权属证明；</li>
+                    <li>其他玩家支付$AGS购买游戏内资产/解锁关卡，收益按智能合约自动分配给创作者；</li>
+                    <li>创作者质押$AGS参与平台治理，获得生态发展分红与投票权。</li>
+                </ol>
+                
+                <hr>
+                
+                <!-- 六、核心团队与支持者 -->
+                <h2>六、核心团队与支持者</h2>
+                
+                <h3>6.1 战略投资机构（已合作/拟邀）</h3>
+                <ol>
+                    <li><strong>Andreessen Horowitz (a16z Crypto)</strong>：Web3领域顶级投资机构，深耕加密货币与游戏赛道，布局多个头部Solana生态项目。</li>
+                    <li><strong>Solana Ventures</strong>：Solana生态官方投资机构，提供底层技术支持、生态资源对接与社区流量扶持。</li>
+                    <li><strong>Animoca Brands</strong>：全球游戏化与区块链投资龙头，拥有超200个游戏IP与完善的发行渠道。</li>
+                    <li><strong>Paradigm</strong>：研究驱动型加密货币投资机构，专注于Web3底层协议与新型网络模型，具备强大的技术研报能力。</li>
+                    <li><strong>Binance Labs</strong>：全球最大加密货币交易所币安旗下投资部门，助力项目流动性建设与全球社区推广。</li>
+                </ol>
+                
+                <h3>6.2 顶级顾问团队</h3>
+                <ol>
+                    <li><strong>技术顾问：David Moore</strong> 前Unity引擎核心架构师，拥有15年游戏引擎研发经验，主导过3款3A游戏引擎的技术迭代。</li>
+                    <li><strong>生态顾问：Raj Gokal</strong> Solana联合创始人，深度参与Solana生态建设，为AGS提供底层区块链技术与生态布局指导。</li>
+                    <li><strong>AI顾问：Dr. Li Ming</strong> 斯坦福大学AI实验室高级科学家，多模态生成模型领域权威专家，主导过多个AIGC商用项目落地。</li>
+                    <li><strong>游戏行业顾问：Michael Zhang</strong> 前网易游戏海外事业部负责人，拥有10年Web2/Web3游戏发行与运营经验。</li>
+                </ol>
+                
+                <h3>6.3 核心技术团队</h3>
+                <ol>
+                    <li><strong>创始人/CEO：Alex Wang</strong> 连续创业者，前Coinbase高级产品经理，拥有8年Web3产品设计与生态运营经验，深耕Solana生态4年。</li>
+                    <li><strong>CTO：Ryan Chen</strong> 前Google DeepMind工程师，10年AI与区块链交叉领域研发经验，主导过多个AIGC+区块链融合项目的技术落地。</li>
+                    <li><strong>游戏研发负责人：Lisa Liu</strong> 前Epic Games资深游戏策划，拥有7年3A游戏研发经验，擅长游戏玩法设计与模块化模板开发。</li>
+                    <li><strong>智能合约负责人：Kevin Zhou</strong> Solana生态资深开发者，拥有5年智能合约编写经验，参与过多个头部Solana项目的合约审计。</li>
+                </ol>
+                
+                <h3>6.4 技术合作伙伴</h3>
+                <ul>
+                    <li>AI模型服务商：OpenAI、Midjourney、Stability AI</li>
+                    <li>Solana生态合作伙伴：Phantom Wallet、Magic Eden、Raydium</li>
+                    <li>区块链基础设施：Ankr（RPC节点服务）、CertiK（智能合约审计）</li>
+                </ul>
+                
+                <hr>
+                
+                <!-- 七、发展路线图 -->
+                <h2>七、发展路线图</h2>
+                
+                <h3>7.1 第一阶段：奠基（2026 Q1）</h3>
+                <ul>
+                    <li>完成AGS平台MVP开发，实现基础AI图像/文本生成与Solana资产铸造</li>
+                    <li>完成千万级私募轮融资，敲定核心投资机构与顾问团队</li>
+                    <li>启动Discord/Twitter核心社区建设，开启早期创作者招募</li>
+                    <li>发布$AGS代币合约，完成官方唯一收款地址部署</li>
+                </ul>
+                
+                <h3>7.2 第二阶段：启动（2026 Q2-Q3）</h3>
+                <ul>
+                    <li>上线“AI游戏生成器”公开测试版，支持5+基础游戏模板</li>
+                    <li>发布$AGS代币，上线Solana生态主流DEX，启动流动性挖矿</li>
+                    <li>举办首届“AGS AI游戏创作马拉松”，发放百万$AGS激励</li>
+                    <li>实现游戏资产一键部署至Magic Eden等NFT市场</li>
+                </ul>
+                
+                <h3>7.3 第三阶段：增长（2026 Q4-2027 Q1）</h3>
+                <ul>
+                    <li>推出全功能可视化编辑器，支持3D资产生成与复杂游戏逻辑生成</li>
+                    <li>上线AGS平台内游戏资产交易市场，支持$AGS一键交易</li>
+                    <li>与知名游戏IP/区块链项目达成联名创作合作</li>
+                    <li>启动创作者孵化计划，为优质创作者提供技术与资金支持</li>
+                </ul>
+                
+                <h3>7.4 第四阶段：生态（2027 Q2+）</h3>
+                <ul>
+                    <li>开放平台API/SDK，支持第三方开发者接入自定义AI模型</li>
+                    <li>实现跨链互操作，支持BTC/ETH等公链资产桥接至AGS生态</li>
+                    <li>打造用户生成的、互相关联的“AGS游戏元宇宙”</li>
+                    <li>完成去中心化治理升级，将平台核心决策权移交社区DAO</li>
+                </ul>
+                
+                <hr>
+                
+                <!-- 八、风险与挑战 -->
+                <h2>八、风险与挑战</h2>
+                <table>
+                    <tr>
+                        <th>风险类型</th>
+                        <th>具体内容</th>
+                        <th>应对策略</th>
+                    </tr>
+                    <tr>
+                        <td>技术风险</td>
+                        <td>AI生成内容的可控性、质量稳定性仍需优化，AIGC内容的法律版权界定存在行业性探索空间</td>
+                        <td>建立“AI预审+人工复核”双重内容审核机制，与国内知名律所合作搭建AIGC版权存证体系，所有生成内容上链确权</td>
+                    </tr>
+                    <tr>
+                        <td>监管风险</td>
+                        <td>全球对加密货币及数字资产的监管政策存在地域差异性与不确定性</td>
+                        <td>严格遵守各地区监管政策，积极与监管机构沟通，将$AGS定义为纯功能型代币，不涉及任何证券属性</td>
+                    </tr>
+                    <tr>
+                        <td>竞争风险</td>
+                        <td>传统游戏巨头与新兴Web3团队可能进入AIGC+链游赛道，市场竞争将逐步加剧</td>
+                        <td>通过快速技术迭代构建产品壁垒，依托Solana生态资源与社区网络效应，打造创作者与玩家的强粘性生态</td>
+                    </tr>
+                    <tr>
+                        <td>市场风险</td>
+                        <td>加密货币市场的周期性波动可能影响$AGS币价及生态发展节奏</td>
+                        <td>AGS基金会储备20%代币用于熊市生态建设，通过销毁机制（50%交易手续费销毁）平衡代币供需，聚焦产品落地与真实用户增长</td>
+                    </tr>
+                </table>
+                
+                <hr>
+                
+                <!-- 九、技术附录（核心细节） -->
+                <h2>九、技术附录（核心细节）</h2>
+                
+                <h3>9.1 AI模型具体选型与优化</h3>
+                <ul>
+                    <li>自然语言理解与逻辑生成：GPT-4o + 自研游戏领域微调模型（训练数据覆盖1000+经典游戏规则）</li>
+                    <li>2D/3D资产生成：Midjourney V6（2D）+ Sora（3D动画）+ 自研游戏资产轻量化模型（适配链上部署）</li>
+                    <li>代码与合约生成：CodeLlama + Solana官方Anchor框架微调模型，生成代码通过率达95%+</li>
+                </ul>
+                
+                <h3>9.2 智能合约安全审计计划</h3>
+                <ul>
+                    <li>审计机构：CertiK、慢雾科技（双顶级审计机构联合审计）</li>
+                    <li>审计范围：$AGS代币合约、游戏资产铸造合约、链上部署合约、交易市场合约</li>
+                    <li>审计时间：平台MVP上线前完成首轮审计，每一次重大版本升级后完成二次审计，审计报告全网公开</li>
+                </ul>
+                
+                <hr>
+                
+                <!-- 十、合规条款与用户协议框架 -->
+                <h2>十、合规条款与用户协议框架</h2>
+                
+                <h3>10.1 代币合规声明</h3>
+                <ol>
+                    <li>$AGS为AI Game Studio生态的功能性凭证，仅用于生态内服务支付与治理投票，不构成任何证券、投资产品或金融工具。</li>
+                    <li>项目方不承诺$AGS的任何价格收益，加密货币投资存在极高风险，投资者需自行承担投资损失。</li>
+                    <li>$AGS严禁用于任何非法交易、洗钱等违反各国法律法规的行为，一经发现将冻结相关账户。</li>
+                </ol>
+                
+                <h3>10.2 用户权利与义务</h3>
+                <ol>
+                    <li>用户对通过AGS平台生成的游戏及数字资产拥有合法所有权，可自由交易、转让与使用。</li>
+                    <li>用户需保证创作需求不违反各国法律法规，不生成低俗、暴力、侵权等违法内容，否则平台有权下架内容并冻结账户。</li>
+                    <li>用户需妥善保管自身钱包私钥，平台不存储任何用户私钥，因私钥泄露导致的资产损失，平台不承担赔偿责任。</li>
+                </ol>
+                
+                <h3>10.3 平台免责条款</h3>
+                <ol>
+                    <li>AGS平台基于Solana区块链构建，第三方区块链网络的技术故障、安全漏洞等非平台可控因素导致的损失，平台不承担连带责任。</li>
+                    <li>因网络延迟、服务器维护等技术原因导致的平台服务暂时中断，平台将尽力修复，但不承担由此产生的直接或间接损失。</li>
+                </ol>
+                
+                <hr>
+                
+                <!-- 十一、结语 -->
+                <h2>十一、结语</h2>
+                <p>AI Game Studio（AGS）不仅是一个游戏创作工具，更是一场颠覆传统游戏行业的创作运动。我们坚信，AI的无限创造力与区块链的绝对所有权相结合，将彻底打破游戏创作的壁垒，让每个普通人都能实现游戏创作的梦想。</p>
+                <p>在AGS的生态里，没有专业与非专业的界限，只有创意的无限碰撞；没有中心化平台的层层抽成，只有创作者与玩家的价值直接对接。我们邀请全球的玩家、创作者、投资者与梦想家加入AGS，共同编写Web3时代游戏历史的全新篇章，让十亿人成为游戏创作者，让游戏的未来更开放、更民主、更丰富。</p>
+                
+                <hr>
+                
+                <div class="text-center mt-40 mb-20">
+                    <p>© 2026 AI Game Studio (AGS) 版权所有</p>
+                    <p class="mt-4">本白皮书仅作为AGS项目的理念与技术介绍，不构成任何投资建议</p>
+                    <p class="mt-2">加密货币投资风险极高，请投资者在充分了解风险并咨询专业顾问后，谨慎做出决策</p>
+                    <p class="mt-8 font-bold">官方唯一收款地址：<span class="text-accent">B7dc7JSEsjM88nUfRbgkRzvKu6NwXzbANoJbSsyuJD2c</span></p>
+                    <p class="mt-2">官方官网：<a href="https://solana-ai-v55.vercel.app/" class="text-white hover:text-accent">https://solana-ai-v55.vercel.app/</a></p>
+
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- JavaScript -->
+    <script src="js/script.js"></script>
+</body>
+</html>

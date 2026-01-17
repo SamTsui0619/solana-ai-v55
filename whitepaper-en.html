@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Game Studio (AGS) Official Technical Whitepaper</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B2447',
+                        secondary: '#8A2BE2',
+                        accent: '#00BFFF',
+                        success: '#39FF14',
+                        warning: '#FFD700',
+                        dark: '#1A1A2E',
+                        'dark-gray': '#4A4A6A',
+                        'light-gray': '#E5E5E5'
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px rgba(0, 191, 255, 0.5)' },
+                            '100%': { boxShadow: '0 0 20px rgba(0, 191, 255, 0.8), 0 0 30px rgba(138, 43, 226, 0.6)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        /* 白皮书专用样式 */
+        .whitepaper-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(0, 191, 255, 0.2);
+        }
+        
+        .whitepaper-content h1, .whitepaper-content h2, .whitepaper-content h3, .whitepaper-content h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: #ffffff;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .whitepaper-content h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .whitepaper-content h2 {
+            font-size: 2rem;
+            border-bottom: 2px solid rgba(0, 191, 255, 0.3);
+            padding-bottom: 10px;
+        }
+        
+        .whitepaper-content h3 {
+            font-size: 1.5rem;
+        }
+        
+        .whitepaper-content p {
+            color: #e5e5e5;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+        
+        .whitepaper-content ul, .whitepaper-content ol {
+            color: #e5e5e5;
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+        
+        .whitepaper-content li {
+            margin-bottom: 10px;
+            line-height: 1.8;
+        }
+        
+        .whitepaper-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .whitepaper-content th, .whitepaper-content td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid rgba(0, 191, 255, 0.3);
+        }
+        
+        .whitepaper-content th {
+            background-color: rgba(0, 191, 255, 0.1);
+            color: #ffffff;
+            font-weight: bold;
+        }
+        
+        .whitepaper-content tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .whitepaper-content hr {
+            border: none;
+            border-top: 1px solid rgba(0, 191, 255, 0.3);
+            margin: 30px 0;
+        }
+        
+        .whitepaper-content .subtitle {
+            text-align: center;
+            color: #00BFFF;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+        }
+        
+        .whitepaper-content .version-info {
+            text-align: center;
+            color: #8A2BE2;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+        
+        .whitepaper-content .official-info {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: rgba(138, 43, 226, 0.1);
+            border-radius: 8px;
+        }
+        
+        .whitepaper-content .official-info p {
+            margin-bottom: 10px;
+            color: #00BFFF;
+        }
+    </style>
+</head>
+<body class="font-inter text-light-gray overflow-x-hidden">
+    <!-- 3D Background Canvas -->
+    <div id="canvas-container"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-50 glass-effect border-b border-accent/20">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index-en.html" class="flex items-center space-x-2">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center">
+                    <i class="fas fa-gamepad text-white text-xl"></i>
+                </div>
+                <span class="font-orbitron font-bold text-2xl text-white neon-text">AGS</span>
+            </a>
+            
+            <!-- Language Switch -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="whitepaper.html" class="text-light-gray hover:text-accent transition-colors">中文</a>
+                <a href="whitepaper-en.html" class="text-accent font-medium">English</a>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="index-en.html#overview" class="text-light-gray hover:text-accent transition-colors">Overview</a>
+                <a href="index-en.html#features" class="text-light-gray hover:text-accent transition-colors">Features</a>
+                <a href="index-en.html#tokenomics" class="text-light-gray hover:text-accent transition-colors">Tokenomics</a>
+                <a href="index-en.html#team" class="text-light-gray hover:text-accent transition-colors">Team</a>
+                <a href="index-en.html#roadmap" class="text-light-gray hover:text-accent transition-colors">Roadmap</a>
+                <a href="index-en.html#buy-token" class="btn-neon bg-gradient-to-r from-accent to-secondary text-white px-6 py-2 rounded-full font-medium">
+                    Buy Tokens
+                </a>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="md:hidden text-white text-2xl">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div id="mobile-menu" class="md:hidden hidden glass-effect border-t border-accent/20">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex flex-col space-y-4">
+                    <a href="index-en.html#overview" class="text-light-gray hover:text-accent transition-colors py-2">Overview</a>
+                    <a href="index-en.html#features" class="text-light-gray hover:text-accent transition-colors py-2">Features</a>
+                    <a href="index-en.html#tokenomics" class="text-light-gray hover:text-accent transition-colors py-2">Tokenomics</a>
+                    <a href="index-en.html#team" class="text-light-gray hover:text-accent transition-colors py-2">Team</a>
+                    <a href="index-en.html#roadmap" class="text-light-gray hover:text-accent transition-colors py-2">Roadmap</a>
+                    <a href="index-en.html#buy-token" class="btn-neon bg-gradient-to-r from-accent to-secondary text-white px-6 py-3 rounded-full font-medium text-center">
+                        Buy Tokens
+                    </a>
+                    <div class="flex space-x-4 pt-2">
+                        <a href="whitepaper.html" class="text-light-gray hover:text-accent transition-colors">中文</a>
+                        <a href="whitepaper-en.html" class="text-accent font-medium">English</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 px-4">
+        <div class="container mx-auto">
+            <div class="whitepaper-content">
+                <!-- 白皮书标题 -->
+                <h1>AI Game Studio (AGS) Official Technical Whitepaper</h1>
+                <p class="subtitle">The Next-Generation Decentralized Game Creation and Distribution Platform Based on Solana and AI</p>
+                <p class="version-info">Version: V1.0 | Release Date: January 17, 2026</p>
+                
+                <div class="official-info">
+                    <p>Official Exclusive Receiving Address: <strong>B7dc7JSEsjM88nUfRbgkRzvKu6NwXzbANoJbSsyuJD2c</strong></p>
+                    <p>Official Website: <a href="https://solana-ai-v55.vercel.app/" class="text-white hover:text-accent">https://solana-ai-v55.vercel.app/</a></p>
+                </div>
+                
+                <hr>
+                
+                <!-- I. Executive Summary -->
+                <h2>I. Executive Summary</h2>
+                <p>AI Game Studio (AGS) lowers the barriers to game development with an innovative wave, igniting a global creation revolution. We have built a decentralized platform based on the <strong>high-performance Solana blockchain</strong>, deeply integrating cutting-edge multimodal AI models to enable users to <strong>one-click generate and deploy on-chain playable games</strong> through simple prompts, with clear and traceable ownership of all assets.</p>
+                <p>The platform's native token, <strong>$AGS</strong>, serves as the core fuel of the ecosystem, covering all scenarios including AI computing power payment, asset minting, transaction circulation, and community governance. AGS brings together top investment institutions and technical experts in the Web3, gaming, and AI fields to build an open game metaverse <strong>led by creators, participated by players, and assisted by AI</strong>, redefining the underlying logic of game creation and distribution in the Web3 era.</p>
+                
+                <hr>
+                
+                <!-- II. Vision and Mission -->
+                <h2>II. Vision and Mission</h2>
+                
+                <h3>2.1 Core Vision</h3>
+                <p>To become the driver of the "iPhone Moment" for game creation in the Web3 era, empowering one billion people to become game creators.</p>
+                
+                <h3>2.2 Core Mission</h3>
+                <p>Integrate AI's real-time generation capabilities with blockchain's transparent ownership confirmation features to build a code-free, low-cost, and high-freedom decentralized game creation and social platform.</p>
+                
+                <hr>
+                
+                <!-- III. Market Opportunities and Pain Points Analysis -->
+                <h2>III. Market Opportunities and Pain Points Analysis</h2>
+                <p>The gaming industry is in a dual upsurge of transition from Web2 to Web3 and full penetration of AI technology. However, both traditional models and early blockchain games have core pain points, creating a hundred-billion-dollar market opportunity for AGS:</p>
+                
+                <ol>
+                    <li><strong>Traditional Game Development</strong>: R&D costs exceed tens of millions, cycles last 1-3 years, and technical barriers in programming, art, and design exclude small and medium teams as well as individual creators.</li>
+                    <li><strong>Web2 UGC Platforms</strong>: Creators do not truly own their works and assets; platforms charge high commissions with opaque revenue sharing models, severely dampening creative motivation.</li>
+                    <li><strong>Existing Blockchain Games</strong>: Overemphasize finance while neglecting gameplay; development still relies on traditional processes, with blockchain only used as an asset trading tool, failing to innovate the creation process.</li>
+                    <li><strong>AI-Generated Content Track</strong>: Image, code, and narrative generation technologies are mature, but there is a lack of a one-stop platform seamlessly integrated with blockchain economic systems, making it difficult to effectively precipitate content value.</li>
+                </ol>
+                
+                <p><strong>AGS Core Solution</strong>: Deeply integrate <strong>AI Creation</strong>, <strong>Blockchain Deployment</strong>, and <strong>Token Economy</strong> to form a complete closed-loop ecosystem of creation-ownership-circulation-revenue, fundamentally solving industry pain points.</p>
+                
+                <hr>
+                
+                <!-- IV. Core Technical Architecture -->
+                <h2>IV. Core Technical Architecture</h2>
+                
+                <h3>4.1 AI Game Generation Engine</h3>
+                <ol>
+                    <li><strong>Deep Integration of Multimodal AI</strong>: Integrate GPT-4o (game logic/narrative generation), Midjourney/Sora (2D/3D character/scene/prop generation), AudioGen (sound effect/soundtrack generation), and CodeLlama (Solana smart contract/game script generation) to achieve full-element AI-driven creation.</li>
+                    <li><strong>Modular Game Templates</strong>: Embed 10+ core game templates such as RPG, parkour, cards, and simulation management. Users describe requirements in natural language, and AI fills in content with one click to generate a complete playable game package.</li>
+                    <li><strong>Full-Link Editability</strong>: All elements of the generated game, including art, values, and rules, can be fine-tuned through a visual editor or additional AI prompts, enabling an efficient iterative creation process of "generate-edit-regenerate"</li>
+                </ol>
+                
+                <h3>4.2 Solana On-Chain Deployment and Asset Management</h3>
+                <ol>
+                    <li><strong>One-Click On-Chain Deployment</strong>: Generated games and core assets (NFT characters, props, land, etc.) are standardized and packaged by the platform for one-click deployment to the Solana mainnet. Core game logic and asset ownership are recorded on-chain, ensuring transparency and immutability.</li>
+                    <li><strong>High Performance and Low Cost Experience</strong>: Leverage Solana's high throughput of over 65,000 TPS and ultra-low gas fee of $0.0009 to support high-frequency in-game interactions and instant asset transfers, delivering an experience comparable to Web2 games.</li>
+                    <li><strong>Full Compatibility with SPL Standards</strong>: All generated assets comply with Solana's SPL-NFT/FT standards, seamlessly integrating with Solana ecosystem wallets, NFT markets (e.g., Magic Eden), and DEXs (e.g., Raydium) for barrier-free asset circulation.</li>
+                </ol>
+                
+                <h3>4.3 AGS Platform Frontend</h3>
+                <ol>
+                    <li><strong>User-Friendly Interface</strong>: Lightweight web-based design. After connecting Solana wallets such as Phantom/Solflare, users can generate games with one click in the "Creation Workshop" and browse, test, and trade games and assets in the "Game Lobby"</li>
+                    <li><strong>Multi-Dimensional Creator Dashboard</strong>: Provide data dashboards displaying real-time game revenue, player count, asset transaction volume, royalty income, etc. Creative earnings are viewable in real time and withdrawable with one click.</li>
+                </ol>
+                
+                <hr>
+                
+                <!-- V. $AGS Tokenomics -->
+                <h2>V. $AGS Tokenomics</h2>
+                <p>$AGS is the native functional and governance token of the AI Game Studio ecosystem, issued based on the Solana SPL-20 standard, serving as the sole carrier for value circulation and rights exercise within the ecosystem.</p>
+                
+                <h3>5.1 Basic Token Information</h3>
+                <table>
+                    <tr>
+                        <th>Item</th>
+                        <th>Details</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Token Name</strong></td>
+                        <td>AGS</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Blockchain</strong></td>
+                        <td>Solana (SPL-20)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Supply</strong></td>
+                        <td>10,000,000,000 $AGS</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Official Exclusive Receiving Address</strong></td>
+                        <td>B7dc7JSEsjM88nUfRbgkRzvKu6NwXzbANoJbSsyuJD2c</td>
+                    </tr>
+                </table>
+                
+                <h3>5.2 Token Allocation Plan</h3>
+                <table>
+                    <tr>
+                        <th>Allocation Sector</th>
+                        <th>Percentage</th>
+                        <th>Quantity ($AGS)</th>
+                        <th>Usage/Unlocking Rules</th>
+                    </tr>
+                    <tr>
+                        <td>Ecosystem Development & Community Incentives</td>
+                        <td>40%</td>
+                        <td>4,000,000,000</td>
+                        <td>Creator rewards, player airdrops, liquidity mining, community events; no lock-up, released on demand.</td>
+                    </tr>
+                    <tr>
+                        <td>Private Round Financing</td>
+                        <td>15%</td>
+                        <td>1,500,000,000</td>
+                        <td>Allocated to early strategic investment institutions; 6-month lock-up, followed by linear release over 18 months.</td>
+                    </tr>
+                    <tr>
+                        <td>Team & Advisors</td>
+                        <td>15%</td>
+                        <td>1,500,000,000</td>
+                        <td>24-month lock-up, followed by linear release over 24 months to align core team interests long-term.</td>
+                    </tr>
+                    <tr>
+                        <td>Foundation Reserve</td>
+                        <td>20%</td>
+                        <td>2,000,000,000</td>
+                        <td>Long-term ecosystem development, R&D, partnerships; managed by the AGS Foundation.</td>
+                    </tr>
+                    <tr>
+                        <td>Public Sale</td>
+                        <td>10%</td>
+                        <td>1,000,000,000</td>
+                        <td>Community public offering for liquidity building and community popularization; no lock-up.</td>
+                    </tr>
+                </table>
+                
+                <h3>5.3 Core Token Utilities</h3>
+                <ol>
+                    <li><strong>Creation Fuel</strong>: Pay for computing power and technical services required for AI-generated games and digital asset minting.</li>
+                    <li><strong>On-Chain Deployment Fees</strong>: Settle gas fees for game and asset on-chain deployment with $AGS, enabling one-stop payment.</li>
+                    <li><strong>Ecosystem Trading Medium</strong>: The primary settlement currency for trading games, NFT assets, and logic modules on the platform.</li>
+                    <li><strong>Creator Revenue Sharing</strong>: Most in-game player spending is automatically distributed to creators in the form of $AGS.</li>
+                    <li><strong>Community Governance Voting</strong>: Holders stake $AGS to participate in key platform decisions such as technical upgrades, fee adjustments, and new feature priorities.</li>
+                </ol>
+                
+                <h3>5.4 Ecosystem User Flow</h3>
+                <ol>
+                    <li>Users recharge $AGS to their platform wallets (supporting major Solana ecosystem wallets);</li>
+                    <li>Pay $AGS to use AI generation tools and create custom games and digital assets;</li>
+                    <li>Pay a small amount of $AGS to complete on-chain deployment of games and assets, obtaining unique ownership certificates;</li>
+                    <li>Other players pay $AGS to purchase in-game assets or unlock levels, with revenue automatically distributed to creators via smart contracts;</li>
+                    <li>Creators stake $AGS to participate in platform governance and earn ecosystem dividends and voting rights.</li>
+                </ol>
+                
+                <hr>
+                
+                <!-- VI. Core Team and Supporters -->
+                <h2>VI. Core Team and Supporters</h2>
+                
+                <h3>6.1 Strategic Investment Institutions (Partnered/Invited)</h3>
+                <ol>
+                    <li><strong>Andreessen Horowitz (a16z Crypto)</strong>: A top Web3 investment institution with in-depth insights and extensive布局 in the cryptocurrency and gaming sectors, and multiple leading Solana ecosystem projects.</li>
+                    <li><strong>Solana Ventures</strong>: The official investment arm of the Solana ecosystem, providing underlying technical support, ecosystem resource integration, and community traffic support.</li>
+                    <li><strong>Animoca Brands</strong>: A global leader in gamification and blockchain investment, with over 200 game IPs and a comprehensive distribution network.</li>
+                    <li><strong>Paradigm</strong>: A research-driven top investment institution focusing on Web3 underlying protocols and new network models, with strong technical research capabilities.</li>
+                    <li><strong>Binance Labs</strong>: The investment division of the world's largest cryptocurrency exchange, supporting project growth and liquidity building.</li>
+                </ol>
+                
+                <h3>6.2 Top Advisory Team</h3>
+                <ol>
+                    <li><strong>Technical Advisor: David Moore</strong> Former core architect of the Unity engine, with 15 years of game engine R&D experience, leading the technical iteration of 3 AAA game engines.</li>
+                    <li><strong>Ecosystem Advisor: Raj Gokal</strong> Co-founder of Solana, deeply involved in Solana ecosystem construction, providing guidance on underlying blockchain technology and ecosystem layout for AGS.</li>
+                    <li><strong>AI Advisor: Dr. Li Ming</strong> Senior scientist at Stanford University's AI Lab, an authority in multimodal generation models, leading the launch of multiple commercial AIGC projects.</li>
+                    <li><strong>Gaming Industry Advisor: Michael Zhang</strong> Former head of NetEase Games Overseas Business Department, with 10 years of Web2/Web3 game publishing and operation experience.</li>
+                </ol>
+                
+                <h3>6.3 Core Technical Team</h3>
+                <ol>
+                    <li><strong>Founder/CEO: Alex Wang</strong> Serial entrepreneur, former senior product manager at Coinbase, with 8 years of Web3 product design and ecosystem operation experience, and 4 years of deep focus on the Solana ecosystem.</li>
+                    <li><strong>CTO: Ryan Chen</strong> Former engineer at Google DeepMind, with 10 years of R&D experience at the intersection of AI and blockchain, leading the technical implementation of multiple AIGC+blockchain integration projects.</li>
+                    <li><strong>Gaming R&D Lead: Lisa Liu</strong> Former senior game designer at Epic Games, with 7 years of AAA game R&D experience, specializing in gameplay design and modular template development.</li>
+                    <li><strong>Smart Contract Lead: Kevin Zhou</strong> Senior Solana ecosystem developer, with 5 years of smart contract writing experience, participating in the audit of multiple leading Solana projects.</li>
+                </ol>
+                
+                <h3>6.4 Technical Partners</h3>
+                <ul>
+                    <li>AI Model Providers: OpenAI, Midjourney, Stability AI</li>
+                    <li>Solana Ecosystem Partners: Phantom Wallet, Magic Eden, Raydium</li>
+                    <li>Blockchain Infrastructure: Ankr (RPC Node Services), CertiK (Smart Contract Auditing)</li>
+                </ul>
+                
+                <hr>
+                
+                <!-- VII. Roadmap -->
+                <h2>VII. Roadmap</h2>
+                
+                <h3>7.1 Phase 1: Foundation (Q1 2026)</h3>
+                <ul>
+                    <li>Complete AGS platform MVP development, enabling basic AI image/text generation and Solana asset minting</li>
+                    <li>Complete multi-million-dollar private round financing, finalize core investment institutions and advisory team</li>
+                    <li>Launch Discord/Twitter core community, initiate early creator recruitment</li>
+                    <li>Release $AGS token contract, complete deployment of the official exclusive receiving address</li>
+                </ul>
+                
+                <h3>7.2 Phase 2: Launch (Q2-Q3 2026)</h3>
+                <ul>
+                    <li>Launch public beta of the "AI Game Generator", supporting 5+ basic game templates</li>
+                    <li>List $AGS on major Solana ecosystem DEXs, launch liquidity mining</li>
+                    <li>Host the first "AGS AI Game Creation Marathon", offering $1 million in $AGS incentives</li>
+                    <li>Enable one-click deployment of game assets to NFT markets such as Magic Eden</li>
+                </ul>
+                
+                <h3>7.3 Phase 3: Growth (Q4 2026-Q1 2027)</h3>
+                <ul>
+                    <li>Launch full-featured visual editor, supporting 3D asset generation and complex game logic generation</li>
+                    <li>Launch in-platform game asset trading market, supporting one-click trading with $AGS</li>
+                    <li>Establish co-creation partnerships with well-known game IPs/blockchain projects</li>
+                    <li>Launch creator incubation program, providing technical and financial support for high-quality creators</li>
+                </ul>
+                
+                <h3>7.4 Phase 4: Ecosystem (Q2 2027+)</h3>
+                <ul>
+                    <li>Open platform API/SDK, enabling third-party developers to integrate custom AI models</li>
+                    <li>Achieve cross-chain interoperability, supporting bridging of BTC/ETH and other public chain assets to the AGS ecosystem</li>
+                    <li>Build a user-generated, interconnected "AGS Game Metaverse"</li>
+                    <li>Complete decentralized governance upgrade, transferring core platform decision-making power to the community DAO</li>
+                </ul>
+                
+                <hr>
+                
+                <!-- VIII. Risks and Challenges -->
+                <h2>VIII. Risks and Challenges</h2>
+                <table>
+                    <tr>
+                        <th>Risk Type</th>
+                        <th>Details</th>
+                        <th>Mitigation Strategies</th>
+                    </tr>
+                    <tr>
+                        <td>Technical Risk</td>
+                        <td>Controllability and quality stability of AI-generated content need optimization; legal definition of AIGC content ownership remains an industry-wide exploration.</td>
+                        <td>Establish a dual content review mechanism of "AI Pre-review + Manual Verification"; cooperate with leading domestic law firms to build an AIGC copyright registration system, with all generated content recorded on-chain for ownership confirmation.</td>
+                    </tr>
+                    <tr>
+                        <td>Regulatory Risk</td>
+                        <td>Global regulatory policies on cryptocurrencies and digital assets are geographically diverse and uncertain.</td>
+                        <td>Strictly comply with regional regulatory policies; proactively communicate with regulatory authorities; define $AGS as a purely functional token with no securities attributes.</td>
+                    </tr>
+                    <tr>
+                        <td>Competitive Risk</td>
+                        <td>Traditional gaming giants and emerging Web3 teams may enter the AIGC+blockchain game track, intensifying market competition.</td>
+                        <td>Build product barriers through rapid technical iteration; leverage Solana ecosystem resources and community network effects to create strong stickiness between creators and players.</td>
+                    </tr>
+                    <tr>
+                        <td>Market Risk</td>
+                        <td>Cyclical fluctuations in the cryptocurrency market may affect $AGS price and ecosystem development pace.</td>
+                        <td>The AGS Foundation reserves 20% of tokens for ecosystem construction during bear markets; balance token supply and demand through a burn mechanism (50% of transaction fees burned); focus on product launch and real user growth.</td>
+                    </tr>
+                </table>
+                
+                <hr>
+                
+                <!-- IX. Technical Appendix (Core Details) -->
+                <h2>IX. Technical Appendix (Core Details)</h2>
+                
+                <h3>9.1 AI Model Selection and Optimization</h3>
+                <ul>
+                    <li>Natural Language Understanding & Logic Generation: GPT-4o + self-developed game-specific fine-tuned model (training data covering 1,000+ classic game rules)</li>
+                    <li>2D/3D Asset Generation: Midjourney V6 (2D) + Sora (3D animation) + self-developed game asset lightweight model (optimized for on-chain deployment)</li>
+                    <li>Code & Contract Generation: CodeLlama + Solana official Anchor framework fine-tuned model, with a generated code pass rate of over 95%</li>
+                </ul>
+                
+                <h3>9.2 Smart Contract Security Audit Plan</h3>
+                <ul>
+                    <li>Audit Institutions: CertiK, SlowMist (joint audit by two top institutions)</li>
+                    <li>Audit Scope: $AGS token contract, game asset minting contract, on-chain deployment contract, trading market contract</li>
+                    <li>Audit Timeline: Complete first-round audit before MVP launch; conduct second-round audit after each major version upgrade; publish audit reports publicly.</li>
+                </ul>
+                
+                <hr>
+                
+                <!-- X. Compliance Terms and User Agreement Framework -->
+                <h2>X. Compliance Terms and User Agreement Framework</h2>
+                
+                <h3>10.1 Token Compliance Statement</h3>
+                <ol>
+                    <li>$AGS is a functional token of the AI Game Studio ecosystem, used solely for in-ecosystem service payment and governance voting, and does not constitute any security, investment product, or financial instrument.</li>
+                    <li>The project team does not promise any price returns for $AGS; cryptocurrency investment involves high risks, and investors shall bear investment losses independently.</li>
+                    <li>$AGS is strictly prohibited from being used for illegal transactions, money laundering, or other activities violating national laws and regulations; relevant accounts will be frozen upon discovery.</li>
+                </ol>
+                
+                <h3>10.2 User Rights and Obligations</h3>
+                <ol>
+                    <li>Users have legal ownership of games and digital assets generated through the AGS platform, with the right to freely trade, transfer, and use them.</li>
+                    <li>Users must ensure that creation requirements comply with national laws and regulations, and shall not generate vulgar, violent, infringing, or other illegal content; otherwise, the platform has the right to take down the content and freeze the account.</li>
+                    <li>Users must properly keep their wallet private keys; the platform does not store any user private keys and shall not be liable for asset losses caused by private key leakage.</li>
+                </ol>
+                
+                <h3>10.3 Platform Disclaimer</h3>
+                <ol>
+                    <li>The AGS platform is built on the Solana blockchain; the platform shall not be jointly liable for losses caused by uncontrollable factors of third-party blockchain networks, such as technical failures and security vulnerabilities.</li>
+                    <li>In the event of temporary platform service interruption due to technical reasons such as network delays or server maintenance, the platform will make every effort to repair it but shall not be liable for direct or indirect losses arising therefrom.</li>
+                </ol>
+                
+                <hr>
+                
+                <!-- XI. Conclusion -->
+                <h2>XI. Conclusion</h2>
+                <p>AI Game Studio (AGS) is more than a tool or platform—it is the beginning of a movement to disrupt the traditional gaming industry. We believe that combining AI's unlimited creativity with blockchain's absolute ownership will completely break down barriers to game creation, enabling every ordinary person to realize their dream of game creation.</p>
+                <p>In the AGS ecosystem, there are no boundaries between professionals and non-professionals, only endless collisions of ideas; there are no layers of commissions from centralized platforms, only direct value alignment between creators and players. We invite gamers, creators, investors, and dreamers worldwide to join AGS and co-write a new chapter in the history of gaming in the Web3 era—empowering one billion people to become game creators and building a more open, democratic, and prosperous future for gaming.</p>
+                
+                <hr>
+                
+                <div class="text-center mt-40 mb-20">
+                    <p>© 2026 AI Game Studio (AGS) All Rights Reserved</p>
+                    <p class="mt-4">This whitepaper is for informational purposes only, introducing the concept and technology of the AGS project, and does not constitute any investment advice.</p>
+                    <p class="mt-2">Cryptocurrency investment involves high risks. Investors are advised to fully understand the risks and consult professional advisors before making prudent investment decisions.</p>
+                    <p class="mt-8 font-bold">Official Exclusive Receiving Address: <span class="text-accent">B7dc7JSEsjM88nUfRbgkRzvKu6NwXzbANoJbSsyuJD2c</span></p>
+                    <p class="mt-2">Official Website: <a href="https://solana-ai-v55.vercel.app/" class="text-white hover:text-accent">https://solana-ai-v55.vercel.app/</a></p>
+
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- JavaScript -->
+    <script src="js/script.js"></script>
+</body>
+</html>
