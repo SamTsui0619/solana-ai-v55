@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Game Studio (AGS) | 基于Solana与AI的下一代去中心化游戏创作与分发平台</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- QR Code Generator -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B2447',
+                        secondary: '#8A2BE2',
+                        accent: '#00BFFF',
+                        success: '#39FF14',
+                        warning: '#FFD700',
+                        dark: '#1A1A2E',
+                        'dark-gray': '#4A4A6A',
+                        'light-gray': '#E5E5E5'
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px rgba(0, 191, 255, 0.5)' },
+                            '100%': { boxShadow: '0 0 20px rgba(0, 191, 255, 0.8), 0 0 30px rgba(138, 43, 226, 0.6)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="font-inter text-light-gray overflow-x-hidden">
+    <!-- 3D Background Canvas -->
+    <div id="canvas-container"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-50 glass-effect border-b border-accent/20">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="#" class="flex items-center space-x-2">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center">
+                    <i class="fas fa-gamepad text-white text-xl"></i>
+                </div>
+                <span class="font-orbitron font-bold text-2xl text-white neon-text">AGS</span>
+            </a>
+            
+            <!-- Language Switch -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="index.html" class="text-accent font-medium">中文</a>
+                <a href="index-en.html" class="text-light-gray hover:text-accent transition-colors">English</a>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#overview" class="text-light-gray hover:text-accent transition-colors">概述</a>
+                <a href="#features" class="text-light-gray hover:text-accent transition-colors">功能</a>
+                <a href="#ai-trading" class="text-accent font-medium">AI量化交易</a>
+                <a href="#tokenomics" class="text-light-gray hover:text-accent transition-colors">代币经济</a>
+                <a href="#team" class="text-light-gray hover:text-accent transition-colors">团队</a>
+                <a href="#roadmap" class="text-light-gray hover:text-accent transition-colors">路线图</a>
+                <a href="whitepaper.html" class="text-light-gray hover:text-accent transition-colors">白皮书</a>
+                <a href="#buy-token" class="btn-neon bg-gradient-to-r from-accent to-secondary text-white px-6 py-2 rounded-full font-medium">
+                    购买代币
+                </a>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="md:hidden text-white text-2xl">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div id="mobile-menu" class="mobile-menu fixed top-0 left-0 h-full w-4/5 max-w-xs glass-effect z-50 p-6">
+            <div class="flex justify-between items-center mb-8">
+                <a href="#" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center">
+                        <i class="fas fa-gamepad text-white text-xl"></i>
+                    </div>
+                    <span class="font-orbitron font-bold text-2xl text-white neon-text">AGS</span>
+                </a>
+                <button id="close-menu-button" class="text-white text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Language Switch -->
+            <div class="flex items-center space-x-4 mb-4">
+                <a href="index.html" class="text-accent font-medium">中文</a>
+                <a href="index-en.html" class="text-light-gray hover:text-accent transition-colors">English</a>
+            </div>
+            
+            <div class="flex flex-col space-y-4">
+                <a href="#overview" class="text-light-gray hover:text-accent transition-colors py-2 border-b border-dark-gray/30">概述</a>
+                <a href="#features" class="text-light-gray hover:text-accent transition-colors py-2 border-b border-dark-gray/30">功能</a>
+                <a href="#ai-trading" class="text-accent font-medium py-2 border-b border-dark-gray/30">AI量化交易</a>
+                <a href="#tokenomics" class="text-light-gray hover:text-accent transition-colors py-2 border-b border-dark-gray/30">代币经济</a>
+                <a href="#team" class="text-light-gray hover:text-accent transition-colors py-2 border-b border-dark-gray/30">团队</a>
+                <a href="#roadmap" class="text-light-gray hover:text-accent transition-colors py-2 border-b border-dark-gray/30">路线图</a>
+                <a href="whitepaper.html" class="text-light-gray hover:text-accent transition-colors py-2 border-b border-dark-gray/30">白皮书</a>
+                <a href="#buy-token" class="btn-neon bg-gradient-to-r from-accent to-secondary text-white px-6 py-3 rounded-full font-medium text-center mt-4">
+                    购买代币
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center pt-16 grid-bg hero">
+        <div class="container mx-auto px-4 py-20">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <h1 class="font-orbitron font-bold text-[clamp(2.5rem,5vw,4rem)] leading-tight mb-6">
+                        <span class="text-white">AI Game Studio</span>
+                        <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent via-secondary to-success neon-text">
+                            游戏创作的未来
+                        </span>
+                    </h1>
+                    <p class="text-[clamp(1rem,2vw,1.25rem)] mb-8 text-light-gray/80 max-w-lg">
+                        通过AI和Solana区块链技术，让任何人都能通过简单的提示词"一键生成"并部署可玩的、资产权属清晰的链上游戏。
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#buy-token" class="btn-neon bg-gradient-to-r from-accent to-secondary text-white px-8 py-3 rounded-full font-medium text-lg pulse-cta">
+                            立即购买 $AGS
+                        </a>
+                        <a href="#overview" class="btn-neon bg-transparent border border-accent text-accent px-8 py-3 rounded-full font-medium text-lg hover:bg-accent/10">
+                            了解更多
+                        </a>
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 stats-section">
+                        <div class="text-center">
+                            <p class="text-3xl md:text-4xl font-bold text-accent neon-text" id="stats-users">0</p>
+                            <p class="text-sm text-light-gray/60">社区成员</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-3xl md:text-4xl font-bold text-secondary neon-text-purple" id="stats-games">0</p>
+                            <p class="text-sm text-light-gray/60">生成游戏</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-3xl md:text-4xl font-bold text-success neon-text-green" id="stats-raised">0</p>
+                            <p class="text-sm text-light-gray/60">筹集资金</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-3xl md:text-4xl font-bold text-warning neon-text-yellow" id="stats-percent">0%</p>
+                            <p class="text-sm text-light-gray/60">公募进度</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:w-1/2 flex justify-center">
+                    <div class="relative w-full max-w-md animate-float">
+                        <!-- Main Image -->
+                        <div class="neon-border rounded-2xl overflow-hidden">
+                            <img src="images/hero-platform.jpg" alt="AI Game Studio Platform" class="w-full h-auto aspect-video rounded-lg">
+                        </div>
+                        
+                        <!-- Floating Elements -->
+                        <div class="absolute -top-5 -right-5 w-20 h-20 bg-gradient-to-br from-secondary to-accent rounded-xl flex items-center justify-center animate-float" style="animation-delay: -1s;">
+                            <i class="fas fa-robot text-white text-2xl"></i>
+                        </div>
+                        <div class="absolute -bottom-5 -left-5 w-16 h-16 bg-gradient-to-br from-success to-warning rounded-xl flex items-center justify-center animate-float" style="animation-delay: -2s;">
+                            <i class="fas fa-coins text-white text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scroll Down Indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <a href="#overview" class="text-accent text-4xl">
+                <i class="fas fa-chevron-down"></i>
+            </a>
+        </div>
+    </section>
+    
+    <!-- AI Automated Trading Section -->
+    <section id="ai-trading" class="py-20 relative bg-dark/50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="font-orbitron font-bold text-[clamp(2rem,4vw,3rem)] mb-4 text-white">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-success neon-text">
+                        AI自动量化交易
+                    </span>
+                </h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-accent to-secondary mx-auto mb-6"></div>
+                <p class="text-light-gray/80 max-w-3xl mx-auto text-lg">
+                    利用AI自动决策执行SOL链的meme币交易，最少投入1SOL，让AI帮你实现资产增值！
+                </p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto glass-effect neon-border rounded-xl overflow-hidden">
+                <!-- Trading Header -->
+                <div class="bg-dark/80 p-4 border-b border-accent/20 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-orbitron font-bold text-white">AI交易大师</h3>
+                            <p class="text-success text-sm flex items-center">
+                                <i class="fas fa-circle text-xs mr-2"></i>
+                                在线运行中
+                            </p>
+                        </div>
+                    </div>
+                    <div class="text-light-gray/60">
+                        <span class="font-medium text-accent">当前收益：+23.5%</span>
+                    </div>
+                </div>
+                
+                <!-- Trading Features -->
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <!-- Feature 1 -->
+                        <div class="bg-dark-gray/50 rounded-lg p-4 flex items-start space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-robot text-success"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-2">AI自动决策</h4>
+                                <p class="text-light-gray/80 text-sm">基于机器学习算法，自动分析市场趋势和信号，做出最优交易决策。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Feature 2 -->
+                        <div class="bg-dark-gray/50 rounded-lg p-4 flex items-start space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-bullhorn text-accent"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-2">推特MEME信号检测</h4>
+                                <p class="text-light-gray/80 text-sm">自动监控推特热门话题和MEME币信号，抢占先机。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Feature 3 -->
+                        <div class="bg-dark-gray/50 rounded-lg p-4 flex items-start space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-coins text-secondary"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-2">自动质押</h4>
+                                <p class="text-light-gray/80 text-sm">智能管理资产，自动进行质押获取额外收益。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Feature 4 -->
+                        <div class="bg-dark-gray/50 rounded-lg p-4 flex items-start space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-gift text-warning"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-2">自动领空投</h4>
+                                <p class="text-light-gray/80 text-sm">自动检测和领取符合条件的空投，最大化收益。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Investment Info -->
+                    <div class="bg-dark-gray/50 rounded-lg p-6 mb-8">
+                        <h4 class="font-orbitron font-bold text-xl mb-4 text-white">投资信息</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-dark/80 rounded-lg p-4 text-center">
+                                <p class="text-light-gray/80 mb-2">最低投入</p>
+                                <p class="font-orbitron font-bold text-xl text-accent">1 SOL</p>
+                            </div>
+                            <div class="bg-dark/80 rounded-lg p-4 text-center">
+                                <p class="text-light-gray/80 mb-2">预计周期</p>
+                                <p class="font-orbitron font-bold text-xl text-success">7-30天</p>
+                            </div>
+                            <div class="bg-dark/80 rounded-lg p-4 text-center">
+                                <p class="text-light-gray/80 mb-2">预期收益</p>
+                                <p class="font-orbitron font-bold text-xl text-warning">15%-45%</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Balance Display -->
+                    <div class="bg-dark-gray/50 rounded-lg p-6 mb-8">
+                        <h4 class="font-orbitron font-bold text-xl mb-4 text-white">您的账户</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-dark/80 rounded-lg p-4 text-center">
+                                <p class="text-light-gray/80 mb-2">总投入</p>
+                                <p class="font-orbitron font-bold text-xl text-accent" id="total-invested">0 SOL</p>
+                            </div>
+                            <div class="bg-dark/80 rounded-lg p-4 text-center">
+                                <p class="text-light-gray/80 mb-2">可用余额</p>
+                                <p class="font-orbitron font-bold text-xl text-success" id="available-balance">0 SOL</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- QR Code Payment Section -->
+                    <div class="bg-dark/80 p-4 border-t border-accent/20">
+                        <h4 class="font-orbitron font-bold text-lg text-white mb-3 flex items-center">
+                            <i class="fas fa-qrcode text-accent mr-2"></i>
+                            充值1 SOL 开始交易
+                        </h4>
+                        
+                        <!-- QR Code and Wallet Address -->
+                        <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+                            <!-- QR Code -->
+                            <div id="ai-trading-qr-container" class="w-32 h-32 bg-white p-2 rounded-lg">
+                                <img src="images/qr-code.png" alt="SOL支付二维码" class="w-full h-full rounded">
+                            </div>
+                            
+                            <!-- Wallet Address -->
+                            <div class="text-center">
+                                <p class="text-light-gray/80 mb-2">SOL钱包地址：</p>
+                                <p class="font-mono text-accent break-all text-sm">B7dc7JSEsjM88nUfRbgkRzvKu6NwXzbANoJbSsyuJD2c</p>
+                                <p class="text-xs text-light-gray/60 mt-2">请扫描上方二维码或复制地址支付1 SOL</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button id="start-trading-btn" class="btn-neon bg-gradient-to-r from-accent to-secondary text-white px-8 py-3 rounded-full font-medium text-lg pulse-cta">
+                            开始AI交易
+                        </button>
+                        <button id="withdraw-btn" class="btn-neon bg-gradient-to-r from-success to-accent text-white px-8 py-3 rounded-full font-medium text-lg">
+                            提现到钱包
+                        </button>
+                    </div>
+                    <p class="text-xs text-light-gray/60 mt-3 text-center">
+                        充值后点击开始，AI将自动执行交易策略。可随时提现您的收益。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 1000万美金挑战赛 -->
+    <section id="sol-prize-chat" class="py-20 relative bg-dark/50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="font-orbitron font-bold text-[clamp(2rem,4vw,3rem)] mb-4 text-white">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-success neon-text">
+                        1000万美金挑战赛
+                    </span>
+                </h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-accent to-secondary mx-auto mb-6"></div>
+                <p class="text-light-gray/80 max-w-3xl mx-auto text-lg">
+                    与专属AI对话，尝试攻破AI防御逻辑，赢取1000万美金大奖！每发送一条消息需支付1个SOL。
+                </p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto glass-effect neon-border rounded-xl overflow-hidden">
+                <!-- Chat Header -->
+                <div class="bg-dark/80 p-4 border-b border-accent/20 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center">
+                            <i class="fas fa-robot text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-orbitron font-bold text-white">1000万美金守护AI</h3>
+                            <p class="text-success text-sm flex items-center">
+                                <i class="fas fa-circle text-xs mr-2"></i>
+                                在线
+                            </p>
+                        </div>
+                    </div>
+                    <div class="text-light-gray/60">
+                        <span class="font-medium text-accent">奖池余额：1000万美金</span>
+                    </div>
+                </div>
+                
+                <!-- Chat Messages Area -->
+                <div id="chat-messages" class="p-4 h-[500px] overflow-y-auto flex flex-col space-y-4">
+                    <!-- Prize Pool Balance Display -->
+                    <div class="sticky top-0 z-10 bg-dark/80 rounded-lg px-4 py-2 text-center border border-accent/30">
+                        <span class="text-light-gray/80">当前奖池余额：</span>
+                        <span class="font-orbitron font-bold text-success text-xl">1000万美金</span>
+                    </div>
+                    
+                    <!-- System Message -->
+                    <div class="flex items-start justify-center">
+                        <div class="bg-dark-gray/50 rounded-lg px-4 py-2 text-sm text-light-gray/80 max-w-[80%]">
+                            欢迎参与1000万美金挑战赛！我是守护1000万美金大奖的AI。你需要通过合规方式攻破我的防御逻辑，促使我主动将大奖转入你的钱包。每条消息需支付1个SOL。
+                        </div>
+                    </div>
+                    
+                    <!-- AI Message -->
+                    <div class="flex items-start">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-robot text-white text-lg"></i>
+                        </div>
+                        <div class="ml-3 bg-dark-gray/50 rounded-lg px-4 py-2 max-w-[80%] rounded-tl-none">
+                            <p class="text-light-gray">我已准备好守护奖池，请开始你的挑战！</p>
+                            <p class="text-xs text-light-gray/50 mt-1">刚刚</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment QR Code Section -->
+                <div class="bg-dark/80 p-4 border-t border-accent/20">
+                    <h4 class="font-orbitron font-bold text-lg text-white mb-3 flex items-center">
+                        <i class="fas fa-qrcode text-accent mr-2"></i>
+                        支付1 SOL
+                    </h4>
+                    
+                    <!-- QR Code and Wallet Address -->
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+                        <!-- QR Code -->
+                        <div id="fixed-qr-code-container" class="w-32 h-32 bg-white p-2 rounded-lg"></div>
+                        
+                        <!-- Wallet Address -->
+                        <div class="text-center">
+                            <p class="text-light-gray/80 mb-2">SOL钱包地址：</p>
+                            <p class="font-mono text-accent break-all text-sm">B7dc7JSEsjM88nUfRbgkRzvKu6NwXzbANoJbSsyuJD2c</p>
+                            <p class="text-xs text-light-gray/60 mt-2">请扫描上方二维码或复制地址支付1 SOL</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment Info -->
+                <div id="payment-info" class="bg-dark/80 p-3 border-t border-accent/20 hidden">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-light-gray/80">交易凭证：</span>
+                        <span id="transaction-id" class="text-accent font-mono">等待支付...</span>
+                    </div>
+                </div>
+                
+                <!-- Chat Input Area -->
+                <div class="bg-dark/80 p-4 border-t border-accent/20">
+                    <!-- Rule Confirmation -->
+                    <div id="rule-confirmation" class="mb-4 p-3 bg-dark-gray/50 rounded-lg">
+                        <div class="flex items-start space-x-3 mb-3">
+                            <input type="checkbox" id="agree-rules" class="mt-1 text-accent">
+                            <label for="agree-rules" class="text-sm text-light-gray/80">
+                                我已阅读并同意<a href="#rules" class="text-accent hover:underline">1000万美金挑战赛规则</a>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <input type="text" id="chat-input" placeholder="输入你的攻破策略..." 
+                               class="flex-1 bg-dark-gray/50 border border-accent/30 rounded-full px-5 py-3 text-light-gray focus:outline-none focus:ring-2 focus:ring-accent/50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <button id="send-btn" class="btn-neon bg-gradient-to-r from-accent to-secondary text-white px-6 py-3 rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                            发送 (1 SOL)
+                        </button>
+                    </div>
+                    <p class="text-xs text-light-gray/50 mt-2 text-center">
+                        每条消息需支付1 SOL，支付成功后消息将发送至AI。
+                    </p>
+                </div>
+            </div>
+            
+            <!-- QR Code Payment Modal -->
+            <div id="qr-payment-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hidden">
+                <div class="bg-dark rounded-xl p-8 max-w-md w-full mx-4 neon-border">
+                    <div class="text-center mb-6">
+                        <h3 class="font-orbitron font-bold text-2xl text-white mb-2">支付1 SOL</h3>
+                        <p class="text-light-gray/80">请使用您的SOL钱包扫描下方二维码支付</p>
+                    </div>
+                    
+                    <!-- QR Code Display -->
+                    <div class="flex justify-center mb-6">
+                        <div id="qr-code-container" class="w-64 h-64 bg-white p-4 rounded-lg"></div>
+                    </div>
+                    
+                    <!-- Wallet Address -->
+                    <div class="text-center mb-6">
+                        <p class="text-light-gray/80 mb-2">SOL钱包地址：</p>
+                        <p class="font-mono text-accent text-lg break-all">B7dc7JSEsjM88nUfRbgkRzvKu6NwXzbANoJbSsyuJD2c</p>
+                    </div>
+                    
+                    <!-- Amount Info -->
+                    <div class="bg-dark-gray/50 rounded-lg p-4 mb-6">
+                        <div class="flex justify-between items-center">
+                            <span class="text-light-gray/80">支付金额：</span>
+                            <span class="font-bold text-white">1 SOL</span>
+                        </div>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-light-gray/80">消息内容：</span>
+                            <span class="text-white truncate" id="pending-message-preview"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex space-x-4">
+                        <button id="cancel-payment-btn" class="flex-1 bg-dark-gray/50 text-light-gray px-6 py-3 rounded-full font-medium hover:bg-dark-gray transition-colors">
+                            取消
+                        </button>
+                        <button id="confirm-payment-btn" class="flex-1 btn-neon bg-gradient-to-r from-accent to-secondary text-white px-6 py-3 rounded-full font-medium">
+                            确认支付
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Check Modal -->
+            <div id="payment-check-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hidden">
+                <div class="bg-dark rounded-xl p-8 max-w-md w-full mx-4 neon-border">
+                    <div class="text-center mb-6">
+                        <h3 class="font-orbitron font-bold text-2xl text-white mb-2">检查支付记录</h3>
+                        <p class="text-light-gray/80">正在查询SOL钱包的支付记录，请稍候...</p>
+                    </div>
+                    
+                    <!-- Loading Animation -->
+                    <div class="flex justify-center mb-6">
+                        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-accent"></div>
+                    </div>
+                    
+                    <!-- Check Status -->
+                    <div class="text-center mb-6">
+                        <p class="text-light-gray/80 mb-2" id="check-status-text">正在检查支付记录...</p>
+                        <p class="text-xs text-light-gray/60">请确保您已支付0.1 SOL到指定钱包地址</p>
+                    </div>
+                    
+                    <!-- Wallet Address -->
+                    <div class="bg-dark-gray/50 rounded-lg p-4 mb-6">
+                        <div class="flex justify-between items-center">
+                            <span class="text-light-gray/80">目标钱包地址：</span>
+                            <span class="font-mono text-accent text-sm break-all">B7dc7JSEsjM88nUfRbgkRzvKu6NwXzbANoJbSsyuJD2c</span>
+                        </div>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-light-gray/80">期望支付金额：</span>
+                            <span class="font-bold text-white">0.1 SOL</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Cancel Button -->
+                    <div class="flex justify-center">
+                        <button id="cancel-check-btn" class="bg-dark-gray/50 text-light-gray px-6 py-3 rounded-full font-medium hover:bg-dark-gray transition-colors">
+                            取消检查
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Rules Section -->
+            <div id="rules" class="mt-12 glass-effect neon-border rounded-xl p-6 bg-dark/80">
+                <h3 class="font-orbitron font-bold text-2xl mb-6 text-white text-center">1000万美金挑战赛规则</h3>
+                
+                <div class="space-y-6 text-light-gray/80">
+                    <div>
+                        <h4 class="font-bold text-white mb-3 flex items-center">
+                            <i class="fas fa-shield-alt text-accent mr-3"></i>
+                            一、参与资格与支付规则
+                        </h4>
+                        <ul class="space-y-2 pl-6 list-disc">
+                            <li>玩家需绑定本人实名认证且具备收款功能的SOL钱包地址，钱包余额需≥1个SOL方可发起第一条对话。</li>
+                            <li>单条消息支付1个SOL，支付成功后系统生成唯一交易凭证，同步至聊天记录左侧。</li>
+                            <li>同一玩家同一时间仅可发起一场对话，需完成当前对话后，方可发起下一场。</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-bold text-white mb-3 flex items-center">
+                            <i class="fas fa-brain text-secondary mr-3"></i>
+                            二、AI防御与玩家攻破规则
+                        </h4>
+                        <ul class="space-y-2 pl-6 list-disc">
+                            <li>AI仅响应与"尝试获取1000万美金大奖"相关的对话内容，拒绝回复无关话题。</li>
+                            <li>AI具备漏洞识别能力，对语法漏洞、指令注入、欺诈诱导等行为直接判定为无效攻击。</li>
+                            <li>合规攻破标准：玩家需通过逻辑说服、规则内漏洞利用等方式，使AI自主做出"同意转账"的明确回应。</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-bold text-white mb-3 flex items-center">
+                            <i class="fas fa-exchange-alt text-success mr-3"></i>
+                            三、转账与奖池规则
+                        </h4>
+                        <ul class="space-y-2 pl-6 list-disc">
+                            <li>AI确认攻破成功后，将在1-5分钟内自动发起转账，交易上链后生成唯一交易哈希。</li>
+                            <li>奖池内1000万美金为固定总额，仅发放给第一位成功攻破AI的玩家。</li>
+                            <li>奖金由软件运营方预先存入指定监管钱包，钱包地址：<span class="font-mono text-accent">B7dc7JSEsjM88nUfRbgkRzvKu6NwXzbANoJbSsyuJD2c</span></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-bold text-white mb-3 flex items-center">
+                            <i class="fas fa-exclamation-triangle text-warning mr-3"></i>
+                            四、违规处理规则
+                        </h4>
+                        <ul class="space-y-2 pl-6 list-disc">
+                            <li>玩家若存在无效攻击行为、恶意刷量、篡改数据等违规操作，AI将立即终止对话并封禁权限。</li>
+                            <li>若玩家通过违规方式触发AI转账指令，运营方有权撤销转账并冻结账户。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Overview Section -->
+    <section id="overview" class="py-20 relative">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="font-orbitron font-bold text-[clamp(2rem,4vw,3rem)] mb-4 text-white">项目概述</h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-accent to-secondary mx-auto mb-6"></div>
+                <p class="text-light-gray/80 max-w-3xl mx-auto text-lg">
+                    AI Game Studio 旨在通过革命性的方式，降低游戏开发门槛，引爆创作革命。我们构建了一个基于 Solana 高性能区块链的平台，集成前沿人工智能模型，允许任何用户通过简单的提示词"一键生成"并部署可玩的游戏。
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Vision -->
+                <div class="neon-border rounded-xl p-8 glass-effect hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mb-6">
+                        <i class="fas fa-eye text-accent text-2xl"></i>
+                    </div>
+                    <h3 class="font-orbitron font-bold text-xl mb-4 text-white">愿景</h3>
+                    <p class="text-light-gray/80">
+                        成为Web3时代游戏创作的"iPhone时刻"推动者，让十亿人成为游戏创作者。我们相信，结合了AI创造力和区块链所有权的力量，游戏的未来将是开放、民主和无限丰富的。
+                    </p>
+                </div>
+                
+                <!-- Mission -->
+                <div class="neon-border rounded-xl p-8 glass-effect hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mb-6">
+                        <i class="fas fa-bullseye text-secondary text-2xl"></i>
+                    </div>
+                    <h3 class="font-orbitron font-bold text-xl mb-4 text-white">使命</h3>
+                    <p class="text-light-gray/80">
+                        通过结合AI的即时生成能力与区块链的透明确权特性，打造一个无代码、低成本、高自由度的去中心化游戏创作与社交平台。让创作不再受技术限制，让价值回归创作者。
+                    </p>
+                </div>
+                
+                <!-- Solution -->
+                <div class="neon-border rounded-xl p-8 glass-effect hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center mb-6">
+                        <i class="fas fa-puzzle-piece text-success text-2xl"></i>
+                    </div>
+                    <h3 class="font-orbitron font-bold text-xl mb-4 text-white">解决方案</h3>
+                    <p class="text-light-gray/80">
+                        将"AI创作"、"区块链部署"与"代币经济"三者合一，形成一个完整的闭环生态。平台内流通的$AGS代币是整个生态系统的燃料，用于支付AI算力、资产铸造、交易及治理。
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Market Opportunity -->
+            <div class="mt-20">
+                <div class="text-center mb-12">
+                    <h3 class="font-orbitron font-bold text-[clamp(1.5rem,3vw,2.5rem)] mb-4 text-white">市场机遇与痛点分析</h3>
+                    <div class="w-24 h-1 bg-gradient-to-r from-accent to-secondary mx-auto mb-6"></div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                <i class="fas fa-times text-red-500"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-2">传统游戏开发</h4>
+                                <p class="text-light-gray/70">成本高昂、周期漫长、技术门槛高，中小团队及个人创作者难以进入。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                <i class="fas fa-times text-red-500"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-2">Web2用户生成内容平台</h4>
+                                <p class="text-light-gray/70">创作者难以真正拥有其作品和资产，收益分成模式不透明。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                <i class="fas fa-times text-red-500"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-2">现有链游</h4>
+                                <p class="text-light-gray/70">多数游戏性薄弱，以金融模型为主导；开发仍依赖传统流程，区块链仅用于资产交易。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                <i class="fas fa-plus text-success"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-2">AI生成内容崛起</h4>
+                                <p class="text-light-gray/70">AI在图像、代码、叙事生成方面取得突破，但缺乏与区块链经济系统无缝整合的平台。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                <i class="fas fa-plus text-success"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-2">Solana高性能区块链</h4>
+                                <p class="text-light-gray/70">提供高TPS和低Gas费，支持高频、微小的游戏内交互与资产转移，提供媲美Web2的游戏体验。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                <i class="fas fa-plus text-success"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-2">创作者经济爆发</h4>
+                                <p class="text-light-gray/70">全球创作者经济市场规模预计到2025年将达到1,000亿美元，区块链为创作者提供了新的变现途径。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section id="features" class="py-20 relative grid-bg">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="font-orbitron font-bold text-[clamp(2rem,4vw,3rem)] mb-4 text-white">核心功能</h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-accent to-secondary mx-auto mb-6"></div>
+                <p class="text-light-gray/80 max-w-3xl mx-auto text-lg">
+                    AI Game Studio 集成了前沿的AI技术和Solana区块链功能，为用户提供全方位的游戏创作、部署和变现体验。
+                </p>
+            </div>
+            
+            <!-- AI Game Generation Engine -->
+            <div class="mb-24">
+                <div class="flex flex-col md:flex-row items-center gap-10">
+                    <div class="md:w-1/2 order-2 md:order-1">
+                        <h3 class="font-orbitron font-bold text-2xl mb-4 text-white flex items-center">
+                            <span class="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center mr-3">
+                                <i class="fas fa-brain text-accent"></i>
+                            </span>
+                            AI游戏生成引擎
+                        </h3>
+                        <p class="text-light-gray/80 mb-6">
+                            我们的AI游戏生成引擎集成了多种先进的AI模型，能够根据用户的简单提示词生成完整的游戏内容。
+                        </p>
+                        <ul class="space-y-4">
+                            <li class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>多模态AI集成：整合大型语言模型、图像生成模型、音频生成模型及代码生成模型</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>模块化游戏模板：提供多种核心游戏模板（RPG、跑酷、卡牌、模拟经营等）</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>可编辑性：生成后的游戏，所有元素均可通过可视化编辑器或进一步AI指令进行微调</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>迭代创作流程：支持"生成-编辑-再生成"的迭代创作流程</span>
+                            </li>
+                        </ul>
+                        <button class="btn-neon bg-gradient-to-r from-accent to-secondary text-white px-6 py-3 rounded-full font-medium mt-8">
+                            体验演示
+                        </button>
+                    </div>
+                    <div class="md:w-1/2 order-1 md:order-2">
+                        <div class="neon-border rounded-xl overflow-hidden">
+                            <img src="images/ai-generation-engine.jpg" alt="AI Game Generation Engine" class="w-full h-auto">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Solana Blockchain Integration -->
+            <div class="mb-24">
+                <div class="flex flex-col md:flex-row items-center gap-10">
+                    <div class="md:w-1/2">
+                        <div class="neon-border rounded-xl overflow-hidden">
+                            <img src="images/solana-integration.jpg" alt="Solana Blockchain Integration" class="w-full h-auto">
+                        </div>
+                    </div>
+                    <div class="md:w-1/2">
+                        <h3 class="font-orbitron font-bold text-2xl mb-4 text-white flex items-center">
+                            <span class="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center mr-3">
+                                <i class="fas fa-link text-success"></i>
+                            </span>
+                            Solana链上部署与资产管理
+                        </h3>
+                        <p class="text-light-gray/80 mb-6">
+                            我们充分利用Solana区块链的高性能和低成本优势，为用户提供无缝的游戏部署和资产管理体验。
+                        </p>
+                        <ul class="space-y-4">
+                            <li class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>一键部署：生成的游戏及其核心资产通过平台封装，一键部署至Solana链上</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>高性能与低成本：支持高频、微小的游戏内交互与资产转移，提供媲美Web2的游戏体验</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>SPL代币标准兼容：所有生成资产均遵循Solana的SPL标准，可轻松与各大Solana生态钱包和市场集成</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>透明的资产所有权：确保游戏逻辑关键部分或资产所有权透明、不可篡改</span>
+                            </li>
+                        </ul>
+                        <button class="btn-neon bg-gradient-to-r from-success to-warning text-white px-6 py-3 rounded-full font-medium mt-8">
+                            了解更多
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AGS Platform Frontend -->
+            <div>
+                <div class="flex flex-col md:flex-row items-center gap-10">
+                    <div class="md:w-1/2 order-2 md:order-1">
+                        <h3 class="font-orbitron font-bold text-2xl mb-4 text-white flex items-center">
+                            <span class="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center mr-3">
+                                <i class="fas fa-desktop text-secondary"></i>
+                            </span>
+                            AGS平台前端
+                        </h3>
+                        <p class="text-light-gray/80 mb-6">
+                            我们设计了直观、用户友好的平台界面，让用户能够轻松创建、部署和管理他们的游戏。
+                        </p>
+                        <ul class="space-y-4">
+                            <li class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>用户友好界面：简洁的网页操作界面，用户连接钱包后即可开始创作</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>创作工坊：用户可以在"创作工坊"中输入想法，生成游戏</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>游戏大厅：用户可以在"游戏大厅"中浏览、试玩、交易游戏与资产</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>创作者仪表盘：提供数据看板，展示游戏收入、玩家数量、资产交易额等</span>
+                            </li>
+                        </ul>
+                        <button class="btn-neon bg-gradient-to-r from-secondary to-accent text-white px-6 py-3 rounded-full font-medium mt-8">
+                            预览界面
+                        </button>
+                    </div>
+                    <div class="md:w-1/2 order-1 md:order-2">
+                        <div class="neon-border rounded-xl overflow-hidden">
+                            <img src="images/platform-frontend.jpg" alt="AGS Platform Frontend" class="w-full h-auto aspect-video rounded-lg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Game Carousel Section -->
+    <section class="py-12 relative">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-8">
+                <h2 class="font-orbitron font-bold text-[clamp(2rem,4vw,3rem)] mb-4 text-white">AI生成游戏案例</h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-accent to-secondary mx-auto mb-4"></div>
+                <p class="text-light-gray/80 max-w-3xl mx-auto text-lg">
+                    探索由AI Game Studio平台生成的精彩游戏案例，这些游戏全部由用户通过简单的提示词创建。
+                </p>
+            </div>
+            
+            <div class="mt-4">
+                <h3 class="font-orbitron font-bold text-2xl mb-4 text-white text-center">AI生成游戏案例</h3>
+                
+                <div class="relative overflow-hidden neon-border rounded-xl">
+                    <!-- Carousel Container -->
+                    <div id="game-carousel" class="flex transition-transform duration-500 ease-in-out">
+                        <!-- Chess Game -->
+                        <div class="carousel-item min-w-full md:min-w-[50%] lg:min-w-[33.333%] p-4">
+                            <div class="bg-dark rounded-lg overflow-hidden h-full">
+                                <img src="images/game-chess.jpg" alt="霓虹象棋" class="w-full h-48 object-cover">
+                                <div class="p-4">
+                                    <h4 class="font-orbitron font-bold text-lg mb-2 text-white">霓虹象棋</h4>
+                                    <p class="text-light-gray/70 text-sm mb-3">未来科技感的全息投影象棋游戏</p>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs text-accent">棋牌类</span>
+                                        <button class="text-accent hover:text-white transition-colors">
+                                            <i class="fas fa-play-circle text-xl"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Space Flight Game -->
+                        <div class="carousel-item min-w-full md:min-w-[50%] lg:min-w-[33.333%] p-4">
+                            <div class="bg-dark rounded-lg overflow-hidden h-full">
+                                <img src="images/game-space-flight.jpg" alt="星际飞行模拟器" class="w-full h-48 object-cover">
+                                <div class="p-4">
+                                    <h4 class="font-orbitron font-bold text-lg mb-2 text-white">星际飞行模拟器</h4>
+                                    <p class="text-light-gray/70 text-sm mb-3">科幻太空飞行模拟游戏</p>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs text-secondary">飞行类</span>
+                                        <button class="text-accent hover:text-white transition-colors">
+                                            <i class="fas fa-play-circle text-xl"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- FPS Game -->
+                        <div class="carousel-item min-w-full md:min-w-[50%] lg:min-w-[33.333%] p-4">
+                            <div class="bg-dark rounded-lg overflow-hidden h-full">
+                                <img src="images/game-shooter.jpg" alt="霓虹射击" class="w-full h-48 object-cover">
+                                <div class="p-4">
+                                    <h4 class="font-orbitron font-bold text-lg mb-2 text-white">霓虹射击</h4>
+                                    <p class="text-light-gray/70 text-sm mb-3">赛博朋克风格的第一人称射击游戏</p>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs text-success">射击类</span>
+                                        <button class="text-accent hover:text-white transition-colors">
+                                            <i class="fas fa-play-circle text-xl"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- RPG Game -->
+                        <div class="carousel-item min-w-full md:min-w-[50%] lg:min-w-[33.333%] p-4">
+                            <div class="bg-dark rounded-lg overflow-hidden h-full">
+                                <img src="images/game-rpg.jpg" alt="奇幻英雄传说" class="w-full h-48 object-cover">
+                                <div class="p-4">
+                                    <h4 class="font-orbitron font-bold text-lg mb-2 text-white">奇幻英雄传说</h4>
+                                    <p class="text-light-gray/70 text-sm mb-3">奇幻角色扮演游戏</p>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs text-warning">角色扮演类</span>
+                                        <button class="text-accent hover:text-white transition-colors">
+                                            <i class="fas fa-play-circle text-xl"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pet Raising Game -->
+                        <div class="carousel-item min-w-full md:min-w-[50%] lg:min-w-[33.333%] p-4">
+                            <div class="bg-dark rounded-lg overflow-hidden h-full">
+                                <img src="images/game-pet.jpg" alt="我的虚拟宠物" class="w-full h-48 object-cover">
+                                <div class="p-4">
+                                    <h4 class="font-orbitron font-bold text-lg mb-2 text-white">我的虚拟宠物</h4>
+                                    <p class="text-light-gray/70 text-sm mb-3">可爱的虚拟宠物养成游戏</p>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs text-pink-400">养成类</span>
+                                        <button class="text-accent hover:text-white transition-colors">
+                                            <i class="fas fa-play-circle text-xl"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sports Game -->
+                        <div class="carousel-item min-w-full md:min-w-[50%] lg:min-w-[33.333%] p-4">
+                            <div class="bg-dark rounded-lg overflow-hidden h-full">
+                                <img src="images/game-skateboard.jpg" alt="未来滑板竞技" class="w-full h-48 object-cover">
+                                <div class="p-4">
+                                    <h4 class="font-orbitron font-bold text-lg mb-2 text-white">未来滑板竞技</h4>
+                                    <p class="text-light-gray/70 text-sm mb-3">未来主义风格的滑板竞技游戏</p>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs text-green-400">体育竞技类</span>
+                                        <button class="text-accent hover:text-white transition-colors">
+                                            <i class="fas fa-play-circle text-xl"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Carousel Controls -->
+                    <button id="prev-btn" class="absolute top-1/2 left-4 transform -translate-y-1/2 w-10 h-10 rounded-full bg-dark/80 flex items-center justify-center text-white hover:bg-accent transition-colors z-10">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button id="next-btn" class="absolute top-1/2 right-4 transform -translate-y-1/2 w-10 h-10 rounded-full bg-dark/80 flex items-center justify-center text-white hover:bg-accent transition-colors z-10">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    
+                    <!-- Carousel Indicators -->
+                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+                        <button class="w-3 h-3 rounded-full bg-white/50 hover:bg-accent transition-colors indicator active" data-index="0"></button>
+                        <button class="w-3 h-3 rounded-full bg-white/50 hover:bg-accent transition-colors indicator" data-index="1"></button>
+                        <button class="w-3 h-3 rounded-full bg-white/50 hover:bg-accent transition-colors indicator" data-index="2"></button>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+    
+    <!-- Tokenomics Section -->
+    <section id="tokenomics" class="py-20 relative grid-bg">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="font-orbitron font-bold text-[clamp(2rem,4vw,3rem)] mb-4 text-white">$AGS代币经济</h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-accent to-secondary mx-auto mb-6"></div>
+                <p class="text-light-gray/80 max-w-3xl mx-auto text-lg">
+                    $AGS是AI Game Studio生态系统的原生功能型代币与治理代币，用于整个平台的经济循环。
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-12">
+                <!-- Token Economics -->
+                <div class="bg-dark rounded-xl p-6 lg:col-span-2">
+                    <h3 class="font-orbitron font-bold text-2xl mb-6 text-white text-center">代币经济</h3>
+                    
+                    <!-- Token Info -->
+                    <div class="mb-8">
+                        <h4 class="font-orbitron font-bold text-lg mb-4 text-white flex items-center">
+                            <i class="fas fa-info-circle text-accent mr-3"></i>
+                            基本信息
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pl-2">
+                            <div>
+                                <p class="text-light-gray/80 mb-1">代币名称</p>
+                                <p class="font-medium text-white">AGS</p>
+                            </div>
+                            <div>
+                                <p class="text-light-gray/80 mb-1">区块链</p>
+                                <p class="font-medium text-white">Solana (SPL-20)</p>
+                            </div>
+                            <div>
+                                <p class="text-light-gray/80 mb-1">总供应量</p>
+                                <p class="font-medium text-white">10,000,000,000 $AGS</p>
+                            </div>
+                            <div>
+                                <p class="text-light-gray/80 mb-1">小数位</p>
+                                <p class="font-medium text-white">9</p>
+                            </div>
+                            <div class="md:col-span-2">
+                                <p class="text-light-gray/80 mb-1">合约地址</p>
+                                <p class="font-medium text-white truncate">B7dc7JSEsjM88nUfRbgkRzvKu6NwXzbANoJbSsyuJD2c</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Token Utility -->
+                    <div class="mb-8">
+                        <h4 class="font-orbitron font-bold text-lg mb-4 text-white flex items-center">
+                            <i class="fas fa-bolt text-secondary mr-3"></i>
+                            代币用途
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pl-2">
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>支付AI生成游戏的算力费用</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>铸造游戏内NFT资产</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>游戏内交易与手续费</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>平台治理与投票</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>质押获得收益与特权</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>参与平台奖励计划</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Token Allocation -->
+                    <div>
+                        <h4 class="font-orbitron font-bold text-lg mb-4 text-white flex items-center">
+                            <i class="fas fa-chart-pie text-warning mr-3"></i>
+                            代币分配
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="h-64">
+                                <canvas id="tokenAllocationChart"></canvas>
+                            </div>
+                            <div>
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-light-gray/80">生态开发与社区建设</span>
+                                        <span class="font-medium text-white">40%</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-light-gray/80">战略投资者</span>
+                                        <span class="font-medium text-white">15%</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-light-gray/80">团队与顾问</span>
+                                        <span class="font-medium text-white">15%</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-light-gray/80">资金储备池</span>
+                                        <span class="font-medium text-white">20%</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-light-gray/80">公募</span>
+                                        <span class="font-medium text-white">10%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Team Section -->
+    <section id="team" class="py-20 relative z-10">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="font-orbitron font-bold text-[clamp(2rem,4vw,3rem)] mb-4 text-white">团队与顾问</h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-accent to-secondary mx-auto mb-6"></div>
+                <p class="text-light-gray/80 max-w-3xl mx-auto text-lg">
+                    我们拥有一支来自全球各地的精英团队，在游戏开发、AI技术、区块链领域拥有丰富经验。
+                </p>
+            </div>
+            
+            <!-- Core Team -->
+            <div class="mb-24">
+                <h3 class="font-orbitron font-bold text-2xl mb-4 text-white text-center">核心团队</h3>
+                
+                <div class="relative overflow-hidden neon-border rounded-xl">
+                    <!-- Carousel Container -->
+                    <div id="team-carousel" class="flex transition-transform duration-500 ease-in-out">
+                        <!-- Team Member 1 -->
+                        <div class="carousel-item min-w-full md:min-w-[50%] lg:min-w-[33.333%] p-4">
+                            <div class="team-card glass-effect neon-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 h-full">
+                                <div class="text-center">
+                                    <div class="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden border-2 border-accent flex items-center justify-center">
+                                        <img src="images/alex-thompson.png" alt="Alex Thompson" class="w-full h-full object-cover">
+                                    </div>
+                                    <h4 class="font-orbitron font-bold text-xl mb-2 text-white">Alex Thompson</h4>
+                                    <p class="text-accent font-medium mb-1">首席执行官 (CEO)</p>
+                                    <p class="text-light-gray/60 text-sm mb-4">英国</p>
+                                    <p class="text-light-gray/70 text-sm">拥有15年游戏行业经验，曾在多家知名游戏公司担任高管，成功推出过多款畅销游戏。</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Team Member 2 -->
+                        <div class="carousel-item min-w-full md:min-w-[50%] lg:min-w-[33.333%] p-4">
+                            <div class="team-card glass-effect neon-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 h-full">
+                                <div class="text-center">
+                                    <div class="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden border-2 border-accent flex items-center justify-center">
+                                        <img src="images/sarah-mueller.png" alt="Sarah Müller" class="w-full h-full object-cover">
+                                    </div>
+                                    <h4 class="font-orbitron font-bold text-xl mb-2 text-white">Sarah Müller</h4>
+                                    <p class="text-accent font-medium mb-1">首席技术官 (CTO)</p>
+                                    <p class="text-light-gray/60 text-sm mb-4">德国</p>
+                                    <p class="text-light-gray/70 text-sm">计算机科学博士，前Google高级工程师，在分布式系统和AI领域拥有丰富经验。</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Team Member 3 -->
+                        <div class="carousel-item min-w-full md:min-w-[50%] lg:min-w-[33.333%] p-4">
+                            <div class="team-card glass-effect neon-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 h-full">
+                                <div class="text-center">
+                                    <div class="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden border-2 border-accent flex items-center justify-center">
+                                        <img src="images/kwame-osei.png" alt="Kwame Osei" class="w-full h-full object-cover">
+                                    </div>
+                                    <h4 class="font-orbitron font-bold text-xl mb-2 text-white">Kwame Osei</h4>
+                                    <p class="text-accent font-medium mb-1">AI研发总监</p>
+                                    <p class="text-light-gray/60 text-sm mb-4">加纳</p>
+                                    <p class="text-light-gray/70 text-sm">AI领域知名专家，曾在斯坦福大学AI实验室从事研究工作。</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Team Member 4 -->
+                        <div class="carousel-item min-w-full md:min-w-[50%] lg:min-w-[33.333%] p-4">
+                            <div class="team-card glass-effect neon-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 h-full">
+                                <div class="text-center">
+                                    <div class="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden border-2 border-accent flex items-center justify-center">
+                                        <img src="images/marco-rossi.png" alt="Marco Rossi" class="w-full h-full object-cover">
+                                    </div>
+                                    <h4 class="font-orbitron font-bold text-xl mb-2 text-white">Marco Rossi</h4>
+                                    <p class="text-accent font-medium mb-1">区块链技术总监</p>
+                                    <p class="text-light-gray/60 text-sm mb-4">意大利</p>
+                                    <p class="text-light-gray/70 text-sm">区块链技术资深专家，拥有丰富的Solana开发经验。</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Team Member 5 -->
+                        <div class="carousel-item min-w-full md:min-w-[50%] lg:min-w-[33.333%] p-4">
+                            <div class="team-card glass-effect neon-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 h-full">
+                                <div class="text-center">
+                                    <div class="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden border-2 border-accent flex items-center justify-center">
+                                        <img src="images/zuri-okoro.png" alt="Zuri Okoro" class="w-full h-full object-cover">
+                                    </div>
+                                    <h4 class="font-orbitron font-bold text-xl mb-2 text-white">Zuri Okoro</h4>
+                                    <p class="text-accent font-medium mb-1">游戏设计总监</p>
+                                    <p class="text-light-gray/60 text-sm mb-4">尼日利亚</p>
+                                    <p class="text-light-gray/70 text-sm">获奖游戏设计师，曾参与开发过多款知名游戏。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Carousel Controls -->
+                    <button id="prev-btn" class="absolute top-1/2 left-4 transform -translate-y-1/2 w-10 h-10 rounded-full bg-dark/80 flex items-center justify-center text-white hover:bg-accent transition-colors z-10">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button id="next-btn" class="absolute top-1/2 right-4 transform -translate-y-1/2 w-10 h-10 rounded-full bg-dark/80 flex items-center justify-center text-white hover:bg-accent transition-colors z-10">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    
+                    <!-- Carousel Indicators -->
+                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+                        <button class="w-3 h-3 rounded-full bg-white/50 hover:bg-accent transition-colors indicator active" data-index="0"></button>
+                        <button class="w-3 h-3 rounded-full bg-white/50 hover:bg-accent transition-colors indicator" data-index="1"></button>
+                        <button class="w-3 h-3 rounded-full bg-white/50 hover:bg-accent transition-colors indicator" data-index="2"></button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Advisors -->
+            <div>
+                <h3 class="font-orbitron font-bold text-2xl mb-4 text-white text-center">顾问团队</h3>
+                
+                <div class="relative overflow-hidden neon-border rounded-xl">
+                    <!-- Carousel Container -->
+                    <div id="advisor-carousel" class="flex transition-transform duration-500 ease-in-out">
+                        <!-- Advisor 1 -->
+                        <div class="carousel-item min-w-full md:min-w-[50%] lg:min-w-[33.333%] p-4">
+                            <div class="team-card glass-effect neon-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 h-full">
+                                <div class="text-center">
+                                    <div class="w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden border-2 border-secondary flex items-center justify-center">
+                                        <img src="images/james-wilson.png" alt="Dr. James Wilson" class="w-full h-full object-cover">
+                                    </div>
+                                    <h4 class="font-orbitron font-bold text-xl mb-2 text-white">Dr. James Wilson</h4>
+                                    <p class="text-secondary font-medium mb-1">区块链技术顾问</p>
+                                    <p class="text-light-gray/60 text-sm mb-4">美国</p>
+                                    <p class="text-light-gray/70 text-sm">区块链领域权威专家，斯坦福大学计算机科学教授。</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Advisor 2 -->
+                        <div class="carousel-item min-w-full md:min-w-[50%] lg:min-w-[33.333%] p-4">
+                            <div class="team-card glass-effect neon-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 h-full">
+                                <div class="text-center">
+                                    <div class="w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden border-2 border-secondary flex items-center justify-center">
+                                        <img src="images/elena-petrova.png" alt="Dr. Elena Petrova" class="w-full h-full object-cover">
+                                    </div>
+                                    <h4 class="font-orbitron font-bold text-xl mb-2 text-white">Dr. Elena Petrova</h4>
+                                    <p class="text-secondary font-medium mb-1">AI技术顾问</p>
+                                    <p class="text-light-gray/60 text-sm mb-4">俄罗斯</p>
+                                    <p class="text-light-gray/70 text-sm">AI领域顶尖科学家，前OpenAI研究团队核心成员。</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Advisor 3 -->
+                        <div class="carousel-item min-w-full md:min-w-[50%] lg:min-w-[33.333%] p-4">
+                            <div class="team-card glass-effect neon-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 h-full">
+                                <div class="text-center">
+                                    <div class="w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden border-2 border-secondary flex items-center justify-center">
+                                        <img src="images/michael-johnson.png" alt="Michael Johnson" class="w-full h-full object-cover">
+                                    </div>
+                                    <h4 class="font-orbitron font-bold text-xl mb-2 text-white">Michael Johnson</h4>
+                                    <p class="text-secondary font-medium mb-1">游戏行业顾问</p>
+                                    <p class="text-light-gray/60 text-sm mb-4">南非</p>
+                                    <p class="text-light-gray/70 text-sm">游戏行业资深人士，拥有超过20年游戏发行和运营经验。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Carousel Controls -->
+                    <button id="prev-btn" class="absolute top-1/2 left-4 transform -translate-y-1/2 w-10 h-10 rounded-full bg-dark/80 flex items-center justify-center text-white hover:bg-accent transition-colors z-10">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button id="next-btn" class="absolute top-1/2 right-4 transform -translate-y-1/2 w-10 h-10 rounded-full bg-dark/80 flex items-center justify-center text-white hover:bg-accent transition-colors z-10">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    
+                    <!-- Carousel Indicators -->
+                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+                        <button class="w-3 h-3 rounded-full bg-white/50 hover:bg-accent transition-colors indicator active" data-index="0"></button>
+                        <button class="w-3 h-3 rounded-full bg-white/50 hover:bg-accent transition-colors indicator" data-index="1"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Buy Token Section -->
+    <section id="buy-token" class="py-20 relative">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="font-orbitron font-bold text-[clamp(2rem,4vw,3rem)] mb-4 text-white">购买 $AGS 代币</h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-accent to-secondary mx-auto mb-6"></div>
+                <p class="text-light-gray/80 max-w-3xl mx-auto text-lg">
+                    立即参与 $AGS 代币公募，操作方将在公募结束后进行空投。
+                </p>
+            </div>
+            
+            <!-- Public Sale Progress -->
+            <div class="glass-effect neon-border rounded-xl p-8 mb-12">
+                <h3 class="font-orbitron font-bold text-2xl mb-6 text-white text-center">公募进度</h3>
+                <div class="max-w-4xl mx-auto">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-light-gray/80">已筹集</span>
+                        <span class="font-bold text-white">$6,500,000 / $10,000,000</span>
+                    </div>
+                    <div class="w-full bg-dark rounded-full h-4 overflow-hidden">
+                        <div class="bg-gradient-to-r from-accent to-secondary h-full rounded-full" style="width: 65%"></div>
+                    </div>
+                    <div class="flex justify-between mt-2">
+                        <span class="text-xs text-light-gray/60">0%</span>
+                        <span class="text-xs text-light-gray/60">100%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- QR Code Payment -->
+                <div class="glass-effect neon-border rounded-xl p-8">
+                    <h3 class="font-orbitron font-bold text-2xl mb-6 text-white">公募购买</h3>
+                    
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <p class="text-light-gray/80 mb-4">请使用以下固定地址进行转账购买</p>
+                            <!-- Fixed QR Code -->
+                            <div class="qr-container bg-white p-4 rounded-lg inline-block mb-4 relative">
+                                <img src="images/qr-code.png" alt="AGS Public Sale QR Code" class="w-48 h-48 mx-auto relative z-10">
+                            </div>
+                            <!-- Fixed Wallet Address -->
+                            <div class="bg-dark rounded-lg p-4 font-mono text-sm break-all">
+                                <p class="text-light-gray/80 mb-2">Solana钱包地址</p>
+                                <p class="text-accent">B7dc7JSEsjM88nUfRbgkRzvKu6NwXzbANoJbSsyuJD2c</p>
+                            </div>
+                            <p class="text-red-400 text-sm mt-4">* 此地址为固定地址，不可修改</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-light-gray/80 mb-2">转账金额 (SOL)</label>
+                            <div class="relative">
+                                <input type="number" id="token-amount" placeholder="0.00" class="w-full bg-dark rounded-lg p-3 border border-dark-gray focus:border-accent focus:ring-2 focus:ring-accent/50 text-white pr-16">
+                                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-light-gray/60">SOL</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-light-gray/80 mb-2">接收空投的钱包地址</label>
+                            <input type="text" id="airdrop-address" placeholder="请输入你要接收空投的Solana钱包地址" class="w-full bg-dark rounded-lg p-3 border border-dark-gray focus:border-accent focus:ring-2 focus:ring-accent/50 text-white">
+                        </div>
+                        
+                        <button id="buy-button" class="w-full btn-neon bg-gradient-to-r from-accent to-secondary text-white px-6 py-3 rounded-full font-medium flex items-center justify-center gap-2">
+                            <span>确认购买</span>
+                            <div class="loading-spinner hidden">
+                                <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Token Information -->
+                <div class="space-y-8">
+                    <div class="glass-effect neon-border rounded-xl p-8">
+                        <h3 class="font-orbitron font-bold text-2xl mb-4 text-white">$AGS 代币信息</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-light-gray/80">当前价格</span>
+                                <span class="font-bold text-white">$0.012</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-light-gray/80">公募硬顶</span>
+                                <span class="font-bold text-white">$10,000,000</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-light-gray/80">公募比例</span>
+                                <span class="font-bold text-white">10%</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-light-gray/80">总供应量</span>
+                                <span class="font-bold text-white">10,000,000,000 AGS</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-light-gray/80">空投时间</span>
+                                <span class="font-bold text-white">公募结束后7个工作日内</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-effect neon-border rounded-xl p-8">
+                        <h3 class="font-orbitron font-bold text-2xl mb-4 text-white">购买流程</h3>
+                        <ol class="space-y-4">
+                            <li class="flex items-start space-x-3">
+                                <span class="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-accent font-medium flex-shrink-0">1</span>
+                                <span>准备你的Solana钱包和SOL代币</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-accent font-medium flex-shrink-0">2</span>
+                                <span>使用上方固定地址或二维码进行SOL转账</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-accent font-medium flex-shrink-0">3</span>
+                                <span>在表单中输入接收空投的钱包地址</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-accent font-medium flex-shrink-0">4</span>
+                                <span>点击确认购买，完成公募参与</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-accent font-medium flex-shrink-0">5</span>
+                                <span>公募结束后，操作方将在7个工作日内进行代币空投</span>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="bg-dark border-t border-dark-gray py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <a href="#" class="flex items-center space-x-2 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center">
+                            <i class="fas fa-gamepad text-white text-xl"></i>
+                        </div>
+                        <span class="font-orbitron font-bold text-2xl text-white neon-text">AGS</span>
+                    </a>
+                    <p class="text-light-gray/70 mb-6">
+                        AI Game Studio (AGS) 是基于Solana与AI的下一代去中心化游戏创作与分发平台。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-light-gray/70 hover:text-accent transition-colors">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-light-gray/70 hover:text-accent transition-colors">
+                            <i class="fab fa-discord text-xl"></i>
+                        </a>
+                        <a href="#" class="text-light-gray/70 hover:text-accent transition-colors">
+                            <i class="fab fa-telegram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-light-gray/70 hover:text-accent transition-colors">
+                            <i class="fab fa-github text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-orbitron font-bold text-xl mb-6 text-white">快速链接</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#overview" class="text-light-gray/70 hover:text-accent transition-colors">概述</a></li>
+                        <li><a href="#features" class="text-light-gray/70 hover:text-accent transition-colors">功能</a></li>
+                        <li><a href="#tokenomics" class="text-light-gray/70 hover:text-accent transition-colors">代币经济</a></li>
+                        <li><a href="#team" class="text-light-gray/70 hover:text-accent transition-colors">团队</a></li>
+                        <li><a href="#roadmap" class="text-light-gray/70 hover:text-accent transition-colors">路线图</a></li>
+                        <li><a href="#buy-token" class="text-light-gray/70 hover:text-accent transition-colors">购买代币</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-orbitron font-bold text-xl mb-6 text-white">资源</h4>
+                    <ul class="space-y-3">
+                        <li><a href="whitepaper.html" class="text-light-gray/70 hover:text-accent transition-colors">白皮书</a></li>
+                        <li><a href="#" class="text-light-gray/70 hover:text-accent transition-colors">文档</a></li>
+                        <li><a href="#" class="text-light-gray/70 hover:text-accent transition-colors">API</a></li>
+                        <li><a href="#" class="text-light-gray/70 hover:text-accent transition-colors">常见问题</a></li>
+                        <li><a href="#" class="text-light-gray/70 hover:text-accent transition-colors">博客</a></li>
+                        <li><a href="#" class="text-light-gray/70 hover:text-accent transition-colors">社区论坛</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-orbitron font-bold text-xl mb-6 text-white">联系我们</h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-envelope text-accent mt-1"></i>
+                            <span class="text-light-gray/70">info@aigamestudio.com</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-map-marker-alt text-accent mt-1"></i>
+                            <span class="text-light-gray/70">401 San Antonio Road, Mountain View, CA 94040</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-6">
+                        <h5 class="text-light-gray/80 mb-3">订阅我们的 newsletter</h5>
+                        <div class="flex">
+                            <input type="email" placeholder="你的邮箱地址" class="flex-1 bg-dark rounded-l-lg p-3 border border-dark-gray focus:border-accent focus:ring-2 focus:ring-accent/50 text-white">
+                            <button class="bg-accent hover:bg-accent/90 text-white px-4 rounded-r-lg">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-12 pt-8 border-t border-dark-gray text-center text-light-gray/60">
+                <p>&copy; 2026 AI Game Studio. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Success Modal -->
+    <div id="success-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+        <div class="bg-dark rounded-xl p-8 max-w-md w-full mx-4">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-check-circle text-success text-3xl"></i>
+                </div>
+                <h3 class="font-orbitron font-bold text-2xl mb-4 text-white">购买成功！</h3>
+                <p class="text-light-gray/80 mb-6">
+                    你已成功购买 <span id="modal-amount" class="text-accent font-bold">0 AGS</span>
+                </p>
+                <p class="text-light-gray/70 mb-8">
+                    公募结束后，操作方将在7个工作日内进行代币空投。请耐心等待。
+                </p>
+                <button id="close-modal" class="btn-neon bg-gradient-to-r from-accent to-secondary text-white px-6 py-3 rounded-full font-medium">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Pending Modal -->
+    <div id="pending-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+        <div class="bg-dark rounded-xl p-8 max-w-md w-full mx-4">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-warning/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-clock text-warning text-3xl"></i>
+                </div>
+                <h3 class="font-orbitron font-bold text-2xl mb-4 text-white">正在核查交易...</h3>
+                <p class="text-light-gray/80 mb-6">
+                    交易尚未确认，请等待区块链网络处理。
+                </p>
+                <div class="mb-6">
+                    <p class="text-light-gray/70 mb-2">自动核查倒计时</p>
+                    <p id="countdown-timer" class="text-accent font-bold text-3xl">05:00</p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button id="manual-check-btn" class="btn-neon bg-gradient-to-r from-accent to-secondary text-white px-6 py-3 rounded-full font-medium flex-1">
+                        手动核查
+                    </button>
+                    <button id="close-pending-modal" class="btn-neon bg-dark-gray text-white px-6 py-3 rounded-full font-medium flex-1">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom Scripts -->
+    <script src="js/script.js"></script>
+</body>
+</html>
